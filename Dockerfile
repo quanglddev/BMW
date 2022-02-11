@@ -18,4 +18,5 @@ COPY . ./
 EXPOSE 3000
 
 # start app
-CMD ["npm", "run", "build", "&&", "npm", "run", "start"]
+RUN npm run build
+CMD ["npm", "run", "start"]
