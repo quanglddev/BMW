@@ -78,5 +78,5 @@ jobs:
             docker update --restart=no bmw || true
             docker stop $(docker ps -a -q) || true
             docker rm $(docker ps -a -q) || true
-            printenv
+            printenv >.env
             docker run --env-file .env -d --restart unless-stopped -p 3000:3000 $IMAGE_ID:$VERSION
