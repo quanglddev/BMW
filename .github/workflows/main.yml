@@ -74,4 +74,4 @@ jobs:
             docker rm $(docker ps -a -q) || true
             printenv >.env
             cat .env
-            docker run --env-file ./.env -d --restart unless-stopped -p 3000:3000 $IMAGE_ID:$VERSION
+            docker run --env-file .env -d --restart unless-stopped -p 3000:3000 $IMAGE_ID:$VERSION
