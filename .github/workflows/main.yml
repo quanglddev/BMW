@@ -33,8 +33,8 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
         run: |
-          printenv >.env
-          cat .env
+          printenv >.env.production
+          cat .env.production
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/bmw
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
