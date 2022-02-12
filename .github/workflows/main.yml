@@ -28,7 +28,9 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
-        run: docker build . --file Dockerfile --tag bmw --label "run_number=${GITHUB_RUN_ID}"
+        run: |
+          printenv >.env.production
+          docker build . --file Dockerfile --tag bmw --label "run_number=${GITHUB_RUN_ID}"
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Push image
