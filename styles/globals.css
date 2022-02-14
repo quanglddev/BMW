@@ -50,6 +50,10 @@
   border-color: #22211f;
 }
 
+.border-btn-2 {
+  border-color: #d13545;
+}
+
 span::before {
   content: "\A";
   white-space: pre;
@@ -73,4 +77,55 @@ span::before {
 
 .text-google {
   color: #ff3d00;
+}
+
+.bg-gradient-1 {
+  background-color: #dcd9d4;
+  background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(0, 0, 0, 0.5) 100%
+    ),
+    radial-gradient(
+      at 50% 0%,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(0, 0, 0, 0.5) 50%
+    );
+  background-blend-mode: soft-light, screen;
+}
+
+.bg-gradient-2 {
+  background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+}
+
+.bg-gradient-3 {
+  background-image: linear-gradient(to top, #faf5f6 0%, #fbf7f7 100%);
+}
+
+.bg-red-dark-99 {
+  background-color: #da3948;
+}
+
+.text-red-dark-99 {
+  color: #da3948;
+}
+
+.bg-pink-light-1 {
+  background-color: #f9f3f3;
+}
+
+.bg-pink-light-2 {
+  background-color: #fbf7f7;
+}
+
+.text-pink-light-1 {
+  color: #f9f3f3;
+}
+
+.border-pink-light-2 {
+  border-color: #fbf7f7;
+}
+
+.svg-reverse {
+  transform: rotate(180deg);
 }
