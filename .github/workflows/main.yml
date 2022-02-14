@@ -30,6 +30,9 @@ jobs:
           FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
           FIREBASE_COOKIE_SECRET_CURRENT: ${{ secrets.FIREBASE_COOKIE_SECRET_CURRENT }}
           FIREBASE_COOKIE_SECRET_PREVIOUS: ${{ secrets.FIREBASE_COOKIE_SECRET_PREVIOUS }}
+          FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
         run: |
           printenv >.env.production
           docker build . --file Dockerfile --tag bmw --label "run_number=${GITHUB_RUN_ID}"
