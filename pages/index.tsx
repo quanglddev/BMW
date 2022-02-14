@@ -74,7 +74,7 @@ const Home: NextPage = () => {
     //     <h1 className="text-3xl font-bold underline">Hello world!</h1>
     //   </div>
     // </div>
-    <div className="relative flex w-screen h-screen flex-col items-center bg-navigation-bar">
+    <div className="relative flex w-screen h-screen flex-col items-center">
       {/* <div className="absolute w-full h-screen">
         <Image
           src={backgroundPic}
@@ -87,25 +87,22 @@ const Home: NextPage = () => {
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
 
-      <div
-        className="flex w-full h-full flex-col items-center z-10 mt-12"
-        style={{ backgroundColor: "#FBF7F7" }}
-      >
-        <div className="text-white font-semibold text-4xl mx-16 text-center -mt-8">
+      <div className="flex w-full h-full flex-col items-center z-10 mt-12 bg-pink-light-1">
+        <div className="text-black font-semibold text-4xl mx-16 text-center -mt-8">
           <span>Play Wordle</span> <span>for Free</span>{" "}
           <span>on the #1 Site!</span>
         </div>
         <div className="flex flex-row mt-4 text-sm">
-          <div className="font-bold text-white">9,999,025</div>
-          <div className="text-icon ml-2">Games Today</div>
+          <div className="font-bold text-red-dark-99">9,999,025</div>
+          <div className="text-gray-600 ml-2">Games Today</div>
         </div>
         <div className="flex flex-row mt-1 text-sm">
-          <div className="font-bold text-white">160,025</div>
-          <div className="text-icon ml-2">Playing Now</div>
+          <div className="font-bold text-red-dark-99">160,025</div>
+          <div className="text-gray-600 ml-2">Playing Now</div>
         </div>
 
         {/* Bluetooth */}
-        <div className="flex flex-row w-10/12 h-24 bg-button-2 rounded-xl mt-5 items-center border-b-4 border-btn">
+        <div className="flex flex-row w-10/12 h-24 bg-red-dark-99 rounded-xl mt-5 items-center border-b-4 border-red-800 drop-shadow-2xl">
           <Bluetooth className="fill-current w-16 h-16 ml-3"></Bluetooth>
           <div className="flex flex-col ml-3">
             <div className="font-bold text-white text-xl">Local Match</div>
@@ -116,22 +113,24 @@ const Home: NextPage = () => {
         </div>
 
         {/* Wifi */}
-        <div className="flex flex-row w-10/12 h-24 bg-button-3 rounded-xl mt-5 items-center border-b-4 border-btn-1">
+        <div className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
           <Wifi className="fill-current w-16 h-16 ml-3"></Wifi>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-gray-1 text-xl">Rank Match</div>
-            <div className="text-gray-1 text-xs mt-1">
+            <div className="font-bold text-gray-700 text-xl">Rank Match</div>
+            <div className="text-gray-500 text-xs mt-1">
               Play with someone at your level
             </div>
           </div>
         </div>
 
         {/* Friends */}
-        <div className="flex flex-row w-10/12 h-24 bg-button-3 rounded-xl mt-5 items-center border-b-4 border-btn-1">
+        <div className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
           <Friends className="fill-current w-16 h-16 ml-3"></Friends>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-gray-1 text-xl">Friendly Match</div>
-            <div className="text-gray-1 text-xs mt-1">
+            <div className="font-bold text-gray-700 text-xl">
+              Friendly Match
+            </div>
+            <div className="text-gray-500 text-xs mt-1">
               Play with your friends
             </div>
           </div>
