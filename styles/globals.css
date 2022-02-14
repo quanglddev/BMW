@@ -1,16 +1,76 @@
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.bg-bmw {
+  background-color: #1b2a2b;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.bg-navigation-bar {
+  background-color: #312e2b;
 }
 
-* {
-  box-sizing: border-box;
+.bg-side-bar-1 {
+  background-color: #262421;
+}
+
+.bg-side-bar-2 {
+  background-color: #22211f;
+}
+
+.text-icon {
+  color: #b3b3b2;
+}
+
+.text-gray-1 {
+  color: #babab9;
+}
+
+.bg-button-1 {
+  background-color: #373532;
+}
+
+.bg-button-2 {
+  background-color: #80a555;
+}
+
+.bg-button-3 {
+  background-color: #413e3c;
+}
+
+.border-btn {
+  border-color: #4a5e32;
+}
+
+.border-btn-1 {
+  border-color: #3c3936;
+}
+
+.border-custom-1 {
+  border-color: #22211f;
+}
+
+span::before {
+  content: "\A";
+  white-space: pre;
+}
+
+.bg-form-1 {
+  background-color: #272522;
+}
+
+.bg-text-field-1 {
+  background-color: #3d3b39;
+}
+
+.text-green-1 {
+  color: #80a555;
+}
+
+.text-facebook {
+  color: #217cef;
+}
+
+.text-google {
+  color: #ff3d00;
 }
