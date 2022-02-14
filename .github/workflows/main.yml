@@ -34,7 +34,7 @@ jobs:
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
         run: |
           printenv >.env.production
-          echo '${{ secrets.FIREBASE_PRIVATE_KEY }}' >> ha.txt
+          echo '${{ secrets.FIREBASE_PRIVATE_KEY }}' >> .env.production
           docker build . --file Dockerfile --tag bmw --label "run_number=${GITHUB_RUN_ID}"
 
       - name: Log into registry
