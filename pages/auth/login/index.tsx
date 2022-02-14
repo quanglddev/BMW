@@ -52,7 +52,9 @@ const Login: NextPage = () => {
         icon: "error",
       })
       .then(() => {
-        router.push("/auth/signup");
+        if (errorCode === "auth/user-not-found") {
+          router.push("/auth/signup");
+        }
       });
   };
 
@@ -133,6 +135,7 @@ const Login: NextPage = () => {
               formValid ? "opacity-100" : "opacity-50"
             }`}
             onClick={(e) => onSignIn(e)}
+            disabled={!formValid}
           >
             <div className="font-bold text-white text-2xl">Log In</div>
           </button>
