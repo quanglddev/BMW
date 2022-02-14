@@ -22,20 +22,36 @@ import Uncensored from "../../../public/icons/uncensored.svg";
 import Facebook from "../../../public/icons/facebook.svg";
 import Google from "../../../public/icons/google.svg";
 import ResponsiveAppBar from "../../../components/ResponsiveAppBar";
+import { useRouter } from "next/router";
 
 const SignUp: NextPage = () => {
+  const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [censorPassword, setCensorPassword] = useState<boolean>(true);
 
-  const onFirebaseError = () => {
+  const onFirebaseError = (errorCode: string) => {
     const errorAlert = withReactContent(Swal);
 
-    errorAlert.fire({
-      title: "Error",
-      text: "Invalid Credential",
-      icon: "error",
-    });
+    let message = "Internal Error.";
+
+    switch (errorCode) {
+      case "auth/email-already-in-use":
+        message = "Email already been used. Please log in!";
+        break;
+    }
+
+    errorAlert
+      .fire({
+        title: "Error",
+        text: message,
+        icon: "error",
+      })
+      .then(() => {
+        if (errorCode === "auth/email-already-in-use") {
+          router.push("/auth/login");
+        }
+      });
   };
 
   const onSignUp = (
@@ -51,7 +67,7 @@ const SignUp: NextPage = () => {
       })
       .catch((error) => {
         const errorCode = error.code;
-        onFirebaseError();
+        onFirebaseError(errorCode);
         const errorMessage = error.message;
       });
   };

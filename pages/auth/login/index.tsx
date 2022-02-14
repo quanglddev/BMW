@@ -40,6 +40,12 @@ const Login: NextPage = () => {
       case "auth/user-not-found":
         message = "User not found. Please sign up!";
         break;
+      case "auth/invalid-email":
+        message = "Incorrect credential. Please try again!";
+        break;
+      case "auth/wrong-password":
+        message = "Incorrect credential. Please try again!";
+        break;
       default:
         message = "Internal Error";
         break;
