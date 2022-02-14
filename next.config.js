@@ -25,6 +25,12 @@ const nextConfig = {
     FIREBASE_PRIVATE_KEY_ID: process.env.FIREBASE_PRIVATE_KEY_ID,
     FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
   },
+  serverRuntimeConfig: {
+    FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
+    FIREBASE_COOKIE_SECRET_CURRENT: process.env.FIREBASE_COOKIE_SECRET_CURRENT,
+    FIREBASE_COOKIE_SECRET_PREVIOUS:
+      process.env.FIREBASE_COOKIE_SECRET_PREVIOUS,
+  },
 };
 
 module.exports = nextConfig;
