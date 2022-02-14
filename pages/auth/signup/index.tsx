@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, MouseEvent } from "react";
 import type { NextPage } from "next";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+import { withAuthUser, AuthAction } from "next-firebase-auth";
+
 import Image from "next/image";
 import { firestore, usersCollection } from "../../../firebase/clientApp";
 import {
@@ -17,7 +22,46 @@ import Uncensored from "../../../public/icons/uncensored.svg";
 import ResponsiveAppBar from "../../../components/ResponsiveAppBar";
 
 const SignUp: NextPage = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [censorPassword, setCensorPassword] = useState<boolean>(true);
+
+  const onFirebaseError = () => {
+    const errorAlert = withReactContent(Swal);
+
+    errorAlert.fire({
+      title: "Error",
+      text: "Invalid Credential",
+      icon: "error",
+    });
+  };
+
+  const onSignUp = (
+    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    const auth = getAuth();
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        console.log("🚀 ~ file: index.tsx ~ line 61 ~ errorCode", errorCode);
+        onFirebaseError();
+        const errorMessage = error.message;
+        console.log(
+          "🚀 ~ file: index.tsx ~ line 63 ~ errorMessage",
+          errorMessage
+        );
+      });
+  };
+
+  const emailValid = email.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
+  const passwordValid = password.length >= 6;
+  const formValid = emailValid && passwordValid;
 
   return (
     <div className="relative flex w-screen h-screen flex-col items-center">
@@ -33,20 +77,15 @@ const SignUp: NextPage = () => {
         {/* Form */}
         <div className="flex w-full h-full flex-col items-center z-10 mt-5">
           <form className="flex flex-col items-center w-11/12 rounded-xl">
-            <div className="text-xs text-gray-700 w-11/12 font-bold">
-              Username
-            </div>
-            <input
-              type="text"
-              className="text-black rounded-sm p-2 w-11/12 drop-shadow-md bg-pink-light-1"
-            />
-
             <div className="text-xs text-gray-700 w-11/12 font-bold mt-3">
               Email
             </div>
             <input
               type="text"
               className="text-black rounded-sm p-2 w-11/12 drop-shadow-md bg-pink-light-1"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
 
             <div className="text-xs text-gray-700 w-11/12 font-bold mt-3">
@@ -54,8 +93,11 @@ const SignUp: NextPage = () => {
             </div>
             <div className="flex flex-row w-11/12 items-center relative">
               <input
-                type="text"
+                type={`${censorPassword ? "password" : "text"}`}
                 className="text-black rounded-sm p-2 w-full drop-shadow-md bg-pink-light-1"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               {!censorPassword ? (
                 <Censored
@@ -72,7 +114,10 @@ const SignUp: NextPage = () => {
 
             <button
               type="submit"
-              className="flex flex-row w-11/12 h-12 bg-red-dark-99 rounded-md mt-5 items-center justify-center"
+              className={`flex flex-row w-11/12 h-12 bg-red-dark-99 rounded-md mt-5 items-center justify-center ${
+                formValid ? "opacity-100" : "opacity-50"
+              }`}
+              onClick={(e) => onSignUp(e)}
             >
               <div className="font-bold text-white text-sm">
                 Create Your FREE Account
@@ -129,4 +174,6 @@ const SignUp: NextPage = () => {
   );
 };
 
-export default SignUp;
+export default withAuthUser({
+  whenAuthed: AuthAction.REDIRECT_TO_APP,
+})(SignUp);

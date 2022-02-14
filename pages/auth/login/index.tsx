@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import type { NextPage } from "next";
 import Link from "next/link";
-import Image from "next/image";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { withAuthUser, AuthAction } from "next-firebase-auth";
 import { firestore, usersCollection } from "../../../firebase/clientApp";
 import {
   collection,
@@ -22,7 +26,57 @@ import Facebook from "../../../public/icons/facebook.svg";
 import Google from "../../../public/icons/google.svg";
 
 const Login: NextPage = () => {
+  const router = useRouter();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [censorPassword, setCensorPassword] = useState<boolean>(true);
+
+  const onFirebaseError = (errorCode: string) => {
+    const errorAlert = withReactContent(Swal);
+
+    let message = "";
+
+    switch (errorCode) {
+      case "auth/user-not-found":
+        message = "User not found. Please sign up!";
+        break;
+      default:
+        message = "Internal Error";
+        break;
+    }
+
+    errorAlert
+      .fire({
+        title: "Error",
+        text: message,
+        icon: "error",
+      })
+      .then(() => {
+        router.push("/auth/signup");
+      });
+  };
+
+  const onSignIn = (
+    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        onFirebaseError(errorCode);
+        const errorMessage = error.message;
+      });
+  };
+
+  const emailValid = email.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
+  const passwordValid = password.length >= 6;
+  const formValid = emailValid && passwordValid;
 
   return (
     <div className="relative flex w-screen h-screen flex-col items-center">
@@ -37,7 +91,10 @@ const Login: NextPage = () => {
           <input
             type="text"
             className="text-black rounded-sm p-2 w-11/12 drop-shadow-md bg-pink-light-1"
-            placeholder="Username or Email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
 
           <div className="flex flex-row w-11/12 items-center mt-3 relative">
@@ -45,6 +102,9 @@ const Login: NextPage = () => {
               type={`${censorPassword ? "password" : "text"}`}
               className="text-black rounded-sm p-2 w-full drop-shadow-md bg-pink-light-1"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             {!censorPassword ? (
               <Censored
@@ -69,7 +129,10 @@ const Login: NextPage = () => {
 
           <button
             type="submit"
-            className="flex flex-row w-11/12 h-16 rounded-xl mt-5 items-center border-b-4 justify-center border-red-800 bg-red-dark-99"
+            className={`flex flex-row w-11/12 h-16 rounded-xl mt-5 items-center border-b-4 justify-center border-red-800 bg-red-dark-99 ${
+              formValid ? "opacity-100" : "opacity-50"
+            }`}
+            onClick={(e) => onSignIn(e)}
           >
             <div className="font-bold text-white text-2xl">Log In</div>
           </button>
@@ -107,4 +170,6 @@ const Login: NextPage = () => {
   );
 };
 
-export default Login;
+export default withAuthUser({
+  whenAuthed: AuthAction.REDIRECT_TO_APP,
+})(Login);
