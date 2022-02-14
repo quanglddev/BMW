@@ -12,16 +12,16 @@ const initAuth = () => {
       credential: {
         projectId: process.env.FIREBASE_PROJECT_ID!,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY!,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY
+          ? JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
+          : "",
       },
       databaseURL: "https://cs338-bmw.firebaseio.com",
     },
     firebaseClientInitConfig: {
       apiKey: process.env.FIREBASE_API_KEY!,
       authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.FIREBASE_PRIVATE_KEY
-        ? JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
-        : "",
+      projectId: process.env.FIREBASE_PROJECT_ID,
       storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       appId: process.env.FIREBASE_APP_ID,
