@@ -39,9 +39,16 @@ import FriendSettings from "../../components/FriendSettings";
 import BlockSettings from "../../components/BlockSettings";
 
 const Settings: NextPage = () => {
+  const router = useRouter();
+  const { id: defaultOption } = router.query;
   // Determine what content to show based on chosen page of settings
   const [options, setOptions] = useState<number>(0);
-  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    setOptions(parseInt(defaultOption as string, 10));
+  }, [router.isReady, defaultOption]);
 
   return (
     <div className="relative flex w-screen h-screen flex-col items-center">

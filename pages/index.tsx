@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import { firestore, usersCollection } from "../firebase/clientApp";
+import {
+  firestore,
+  gamesCollection,
+  usersCollection,
+} from "../firebase/clientApp";
 import {
   collection,
   QueryDocumentSnapshot,
@@ -22,67 +26,44 @@ import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import Bluetooth from "../public/icons/bluetooth.svg";
 import Wifi from "../public/icons/wifi.svg";
 import Friends from "../public/icons/friends.svg";
+import Today from "../public/icons/today2.svg";
+import Game from "../interfaces/Game";
 
 const Home: NextPage = () => {
+  const [allGames, setAllGames] = useState<Game[]>([]);
   // const AuthUser = useAuthUser();
   // const [friends, setFriends] = useState<QueryDocumentSnapshot<DocumentData>[]>(
   //   []
   // );
   // const [loading, setLoading] = useState<boolean>(true);
 
-  // useEffect(() => {
-  //   const friendsQuery = query(usersCollection);
+  useEffect(() => {
+    const gamesQuery = query(gamesCollection);
 
-  //   const unsubscribeUser = onSnapshot(
-  //     friendsQuery,
-  //     { includeMetadataChanges: true },
-  //     (querySnapshot) => {
-  //       const result: QueryDocumentSnapshot<DocumentData>[] = [];
+    const unsubscribeUser = onSnapshot(
+      gamesQuery,
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        const result: Game[] = [];
 
-  //       console.log("Hello");
-  //       // querySnapshot.docs.forEach((snapshot) => {
-  //       //   result.push(snapshot);
-  //       // });
+        querySnapshot.forEach((snapshot) => {
+          const newGame = snapshot.data() as Game;
+          result.push(newGame);
+        });
 
-  //       querySnapshot.forEach((snapshot) => {
-  //         console.log(
-  //           "🚀 ~ file: index.tsx ~ line 37 ~ querySnapshot.forEach ~ snapshot",
-  //           snapshot.data()
-  //         );
-  //         result.push(snapshot);
-  //       });
+        setAllGames(result);
+      }
+    );
 
-  //       setFriends(result);
-  //     }
-  //   );
+    return () => {
+      unsubscribeUser();
+    };
+  }, []);
 
-  //   // return () => {
-  //   //   unsubscribeUser();
-  //   // };
-  // }, []);
+  const currentGames = allGames.filter((game) => !game.ended);
 
   return (
-    // <div className={styles.container}>
-    //   <div>
-    //     {friends.map((friend) => {
-    //       return (
-    //         <div key={friend.id}>
-    //           <p>Hello {friend.data().fullName}</p>
-    //         </div>
-    //       );
-    //     })}
-    //     <h1 className="text-3xl font-bold underline">Hello world!</h1>
-    //   </div>
-    // </div>
     <div className="relative flex w-screen h-screen flex-col items-center">
-      {/* <div className="absolute w-full h-screen">
-        <Image
-          src={backgroundPic}
-          alt="Background of the game"
-          placeholder="blur" // Optional blur-up while loading
-          layout="fill"
-        />
-      </div> */}
       <div className="z-50">
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
@@ -92,21 +73,36 @@ const Home: NextPage = () => {
           <span>Play Wordle</span> <span>for Free</span>{" "}
           <span>on the #1 Site!</span>
         </div>
-        <div className="flex flex-row mt-4 text-sm">
-          <div className="font-bold text-red-dark-99">9,999,025</div>
-          <div className="text-gray-600 ml-2">Games Today</div>
+        <div className="flex flex-row items-center mt-3 text-sm">
+          <div className="font-bold text-red-dark-99 text-lg">
+            {allGames.length}
+          </div>
+          <div className="text-gray-600 ml-2">Games Played</div>
         </div>
-        <div className="flex flex-row mt-1 text-sm">
-          <div className="font-bold text-red-dark-99">160,025</div>
+        <div className="flex flex-row items-center text-sm">
+          <div className="font-bold text-lg text-red-dark-99">
+            {currentGames.length}
+          </div>
           <div className="text-gray-600 ml-2">Playing Now</div>
         </div>
 
-        {/* Bluetooth */}
+        {/* Daily */}
         <div className="flex flex-row w-10/12 h-24 bg-red-dark-99 rounded-xl mt-5 items-center border-b-4 border-red-800 drop-shadow-2xl">
+          <Today className="w-16 h-16 ml-3"></Today>
+          <div className="flex flex-col ml-3">
+            <div className="font-bold text-white text-xl">Daily Puzzle</div>
+            <div className="text-gray-100 text-xs mt-1">
+              Consistency is more important than perfection
+            </div>
+          </div>
+        </div>
+
+        {/* Bluetooth */}
+        <div className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
           <Bluetooth className="fill-current w-16 h-16 ml-3"></Bluetooth>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-white text-xl">Local Match</div>
-            <div className="text-gray-100 text-xs mt-1">
+            <div className="font-bold text-gray-700 text-xl">Local Match</div>
+            <div className="text-gray-500 text-xs mt-1">
               Play with someone near you
             </div>
           </div>
@@ -141,12 +137,12 @@ const Home: NextPage = () => {
 };
 
 // // Note that this is a higher-order function.
-// export const getServerSideProps = withAuthUserTokenSSR({
-//   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
-// })();
+export const getServerSideProps = withAuthUserTokenSSR({
+  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+})();
 
-// export default withAuthUser({
-//   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-// })(Home);
+export default withAuthUser({
+  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+})(Home);
 
-export default Home;
+// export default Home;

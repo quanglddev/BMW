@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Logo from "../public/icons/logo.svg";
 import Hamburger from "../public/icons/hamburger.svg";
@@ -11,10 +11,46 @@ import AddFriend from "../public/icons/addFriend.svg";
 import LogOut from "../public/icons/logout.svg";
 import Settings from "../public/icons/settings.svg";
 import Help from "../public/icons/help.svg";
+import Today from "../public/icons/today.svg";
+import { onSnapshot, query, where } from "firebase/firestore";
+import { usersCollection } from "../firebase/clientApp";
+import IUser from "../interfaces/User";
 
 const ResponsiveAppBar = () => {
   const router = useRouter();
+  const [allFriends, setAllFriends] = useState<IUser[]>([]);
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const friendsQuery = query(
+      usersCollection,
+      where("buddies", "array-contains", "my id")
+    );
+
+    const unsubscribeUser = onSnapshot(
+      friendsQuery,
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        const result: IUser[] = [];
+
+        querySnapshot.forEach((snapshot) => {
+          const newFriend = snapshot.data() as IUser;
+          result.push(newFriend);
+        });
+
+        setAllFriends(result);
+      }
+    );
+
+    return () => {
+      unsubscribeUser();
+    };
+  }, []);
+
+  const navigateTo = (path: string) => {
+    router.push(path);
+    setSideBarOpen(false);
+  };
 
   return (
     <div className="flex flex-row items-center fixed top-0 left-0 right-0 bg-red-dark-99 h-12">
@@ -24,7 +60,10 @@ const ResponsiveAppBar = () => {
         onClick={() => setSideBarOpen(true)}
       ></Hamburger>
 
-      <div className="flex flex-row items-center">
+      <div
+        className="flex flex-row items-center"
+        onClick={() => navigateTo("/")}
+      >
         <Logo className="fill-current w-16 h-16 -ml-1"></Logo>
         <div className="-ml-3 text-lg text-white">BMWordle</div>
       </div>
@@ -43,8 +82,14 @@ const ResponsiveAppBar = () => {
               onClick={() => setSideBarOpen(false)}
             ></Close>
 
-            {/* Bluetooth */}
+            {/* Daily */}
             <div className="flex flex-row items-center w-10/12 h-12 mt-3 ml-3">
+              <Today className="w-8 h-8"></Today>
+              <div className="text-black ml-2">Daily Puzzle</div>
+            </div>
+
+            {/* Bluetooth */}
+            <div className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
               <Bluetooth className="fill-current w-8 h-8"></Bluetooth>
               <div className="text-black ml-2">Local match</div>
             </div>
@@ -62,7 +107,10 @@ const ResponsiveAppBar = () => {
             </div>
 
             {/* Add friend button */}
-            <div className="flex items-center justify-center bg-red-dark-99 w-10/12 h-10 rounded ml-3 mt-2">
+            <div
+              className="flex items-center justify-center bg-red-dark-99 w-10/12 h-10 rounded ml-3 mt-2"
+              onClick={() => navigateTo("/settings/2")}
+            >
               <AddFriend className="fill-current text-white w-4 h-4"></AddFriend>
             </div>
 
@@ -74,7 +122,7 @@ const ResponsiveAppBar = () => {
           <div className="flex flex-col justify-center my-2">
             <div
               className="flex flex-row items-center"
-              onClick={() => router.push("/settings")}
+              onClick={() => navigateTo("/settings/0")}
             >
               <Settings className="h-5 w-5 ml-3 fill-current text-gray-700"></Settings>
               <div className="ml-2 text-md text-gray-700">Settings</div>

@@ -12,6 +12,8 @@ initializeApp({
 });
 
 const firestore = getFirestore();
+
+const gamesCollection = collection(firestore, "games");
 const usersCollection = collection(firestore, "users");
 
-export { firestore, usersCollection };
+export { firestore, usersCollection, gamesCollection };

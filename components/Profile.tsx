@@ -5,11 +5,12 @@ import Close from "../public/icons/close.svg";
 import Camera from "../public/icons/camera.svg";
 import USA from "../public/icons/usa.svg";
 import Diamond from "../public/icons/diamond.svg";
+import { Menu, MenuButton, MenuItem, MenuRadioGroup } from "@szhsin/react-menu";
 
 const Profile = () => {
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [country, setCountry] = useState<string>("");
+  const [country, setCountry] = useState<string>("United States");
   const [aboutMe, setAboutMe] = useState<string>("");
 
   return (
@@ -68,13 +69,24 @@ const Profile = () => {
         />
 
         <div className="ml-3 text-sm mt-3">Country</div>
-        <input
-          type="text"
-          className="text-black rounded-sm p-2 w-11/12 drop-shadow-md bg-pink-light-1 ml-3 mt-1"
-          required
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-        />
+        <Menu
+          menuButton={
+            <MenuButton className="text-black rounded-sm p-2 w-11/12 drop-shadow-md bg-pink-light-1 ml-3 mt-1 text-left">
+              {country}
+            </MenuButton>
+          }
+          arrow
+          viewScroll={"auto"}
+          align="center"
+        >
+          <MenuRadioGroup
+            value={country}
+            onRadioChange={(e) => setCountry(e.value)}
+          >
+            <MenuItem value="United States">United States</MenuItem>
+            <MenuItem value="Vietnam">Vietnam</MenuItem>
+          </MenuRadioGroup>
+        </Menu>
 
         <div className="ml-3 text-sm mt-3">About Me</div>
         <textarea
