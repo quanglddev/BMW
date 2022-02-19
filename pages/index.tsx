@@ -24,7 +24,7 @@ import Wifi from "../public/icons/wifi.svg";
 import Friends from "../public/icons/friends.svg";
 
 const Home: NextPage = () => {
-  const AuthUser = useAuthUser();
+  // const AuthUser = useAuthUser();
   // const [friends, setFriends] = useState<QueryDocumentSnapshot<DocumentData>[]>(
   //   []
   // );
@@ -140,11 +140,13 @@ const Home: NextPage = () => {
   );
 };
 
-// Note that this is a higher-order function.
-export const getServerSideProps = withAuthUserTokenSSR({
-  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
-})();
+// // Note that this is a higher-order function.
+// export const getServerSideProps = withAuthUserTokenSSR({
+//   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+// })();
 
-export default withAuthUser({
-  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-})(Home);
+// export default withAuthUser({
+//   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+// })(Home);
+
+export default Home;

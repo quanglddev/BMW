@@ -40,6 +40,9 @@ const nextConfig = {
     FIREBASE_COOKIE_SECRET_PREVIOUS:
       process.env.FIREBASE_COOKIE_SECRET_PREVIOUS,
   },
+  images: {
+    domains: ["avatars.githubusercontent.com"],
+  },
 };
 
 module.exports = nextConfig;

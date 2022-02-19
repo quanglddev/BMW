@@ -129,3 +129,19 @@ span::before {
 .svg-reverse {
   transform: rotate(180deg);
 }
+
+.bg-gray-dark {
+  background-color: #3d404e;
+}
+
+.text-gray-dark-99 {
+  color: #2e313d;
+}
+
+.text-gray-dark-98 {
+  color: #3d404e;
+}
+
+.border-red-dark-99 {
+  border-color: #da3948;
+}
