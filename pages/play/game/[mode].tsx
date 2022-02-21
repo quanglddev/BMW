@@ -11,7 +11,12 @@ import {
 } from "../../../interfaces/BoardSkin";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import { useAuthUser, withAuthUser } from "next-firebase-auth";
+import {
+  AuthAction,
+  useAuthUser,
+  withAuthUser,
+  withAuthUserTokenSSR,
+} from "next-firebase-auth";
 import { getDocs, query, where } from "firebase/firestore";
 import {
   boardSkinsCollection,
@@ -551,11 +556,11 @@ const Game: NextPage = () => {
 };
 
 // Note that this is a higher-order function.
-export default withAuthUser()(Game);
-// export const getServerSideProps = withAuthUserTokenSSR({
-//   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
-// })();
+// export default withAuthUser()(Game);
+export const getServerSideProps = withAuthUserTokenSSR({
+  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+})();
 
-// export default withAuthUser({
-//   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-// })(Settings);
+export default withAuthUser({
+  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+})(Game);

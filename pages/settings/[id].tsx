@@ -8,6 +8,11 @@ import Friends from "../../public/icons/friends2.svg";
 import Profile from "../../components/Profile";
 import BoardSelection from "../../components/BoardSelection";
 import FriendSettings from "../../components/FriendSettings";
+import {
+  AuthAction,
+  withAuthUser,
+  withAuthUserTokenSSR,
+} from "next-firebase-auth";
 
 const Settings: NextPage = () => {
   const router = useRouter();
@@ -66,11 +71,11 @@ const Settings: NextPage = () => {
 };
 
 // Note that this is a higher-order function.
-export default Settings;
-// export const getServerSideProps = withAuthUserTokenSSR({
-//   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
-// })();
+// export default Settings;
+export const getServerSideProps = withAuthUserTokenSSR({
+  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+})();
 
-// export default withAuthUser({
-//   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-// })(Settings);
+export default withAuthUser({
+  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+})(Settings);

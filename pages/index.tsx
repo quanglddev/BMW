@@ -9,6 +9,11 @@ import Friends from "../public/icons/friends.svg";
 import Today from "../public/icons/today2.svg";
 import Game from "../interfaces/Game";
 import { useRouter } from "next/router";
+import {
+  AuthAction,
+  withAuthUser,
+  withAuthUserTokenSSR,
+} from "next-firebase-auth";
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -120,12 +125,12 @@ const Home: NextPage = () => {
 };
 
 // Note that this is a higher-order function.
-// export const getServerSideProps = withAuthUserTokenSSR({
-//   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
-// })();
+export const getServerSideProps = withAuthUserTokenSSR({
+  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+})();
 
-// export default withAuthUser({
-//   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-// })(Home);
+export default withAuthUser({
+  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+})(Home);
 
-export default Home;
+// export default Home;
