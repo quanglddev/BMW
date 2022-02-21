@@ -255,7 +255,7 @@ const Game: NextPage = () => {
     }
 
     if (lineIdx === 5) {
-      displayError(`The word is ${sourceOfTruth}!`, "Next Time");
+      displayError(`The word is ${sourceOfTruth.toUpperCase()}!`, "Next Time");
       setFinished(true);
     }
   };
