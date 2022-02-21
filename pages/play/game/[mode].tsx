@@ -108,12 +108,12 @@ const Game: NextPage = () => {
     });
   }, [AuthUser.id]);
 
-  const displayError = (message: string) => {
+  const displayError = (message: string, title: string = "Error") => {
     const errorAlert = withReactContent(Swal);
 
     errorAlert
       .fire({
-        title: "Error",
+        title,
         text: message,
         icon: "error",
       })
@@ -251,6 +251,11 @@ const Game: NextPage = () => {
     forceUpdate();
     if (guessedWord === sourceOfTruth) {
       displaySuccess("Congratulations!");
+      setFinished(true);
+    }
+
+    if (lineIdx === 5) {
+      displayError(`The word is ${sourceOfTruth}!`, "Next Time");
       setFinished(true);
     }
   };
