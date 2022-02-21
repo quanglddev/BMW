@@ -24,6 +24,7 @@ import {
   usersCollection,
 } from "../../../firebase/clientApp";
 import { validWords } from "../../../utils/english_words_original_wordle";
+import { validEnglishWords } from "../../../utils/validEnglishWords";
 import { Fireworks } from "fireworks/lib/react";
 
 //create your forceUpdate hook
@@ -270,7 +271,7 @@ const Game: NextPage = () => {
       return;
     }
 
-    if (validWords.indexOf(guessedWord) < 0) {
+    if (validEnglishWords.indexOf(guessedWord) < 0) {
       displayError(`${guessedWord.toUpperCase()} is not a valid word.`);
       return;
     }
