@@ -95,14 +95,19 @@ const Game: NextPage = () => {
 
         // HACK: Update the word if new day here, should be done by server in the future
         if (today.getDate() != lastUpdated.getDate()) {
+          const newWord =
+            validWords[Math.floor(Math.random() * validWords.length)];
           const foundDocRef = doc(firestore, "daily", "1234567890");
           await updateDoc(foundDocRef, {
             lastUpdated: Timestamp.fromDate(today),
-            word: validWords[Math.floor(Math.random() * validWords.length)],
+            word: newWord,
           });
+          setWordOfTheDayCreatedTime(today);
+          setWordOfTheDay(newWord);
+        } else {
+          setWordOfTheDayCreatedTime(lastUpdated);
+          setWordOfTheDay(data.word);
         }
-        setWordOfTheDayCreatedTime(lastUpdated);
-        setWordOfTheDay(data.word);
         return;
       });
     });
