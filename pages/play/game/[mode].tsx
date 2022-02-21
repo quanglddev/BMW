@@ -480,7 +480,7 @@ const Game: NextPage = () => {
                 cell.state
               )} ${getCellBorderColor(
                 cell.state
-              )} xs:w-14 xs:h-14 sm:w-20 sm:h-20`}
+              )} xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md`}
             >
               <input
                 ref={(el) => (cellsRef.current[idx] = el)}
