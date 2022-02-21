@@ -289,7 +289,7 @@ const Game: NextPage = () => {
 
     if (keyCode.toLowerCase() === "enter") {
       checkLastFilledLine();
-    } else if (keyCode.toLowerCase() === "␡") {
+    } else if (keyCode.toLowerCase() === "⌫") {
       removeLastFilledCell();
     } else {
       insertFirstEmptyCell(keyCode);
