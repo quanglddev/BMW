@@ -515,7 +515,7 @@ const Game: NextPage = () => {
               </button>
             ))}
           </div>
-          <div className="w-full flex justify-center my-[5px]">
+          <div className="w-full flex justify-center mt-[5px]">
             {keyboard[1].map((keyCode) => (
               <button
                 key={keyCode.value}
