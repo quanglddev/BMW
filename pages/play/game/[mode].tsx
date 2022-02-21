@@ -213,7 +213,7 @@ const Game: NextPage = () => {
   const startFirework = async (cellIdx: number) => {
     const bounding = cellsRef.current[cellIdx]!.getBoundingClientRect();
     const x = bounding.x + bounding.width / 2;
-    const y = bounding.y + bounding.height / 2;
+    const y = bounding.y + bounding.height / 2 + window.scrollY;
     setFireworkX(x);
     setFireworkY(y);
     setRunFirework(true);
@@ -419,8 +419,8 @@ const Game: NextPage = () => {
       </div>
 
       <div className="flex w-full h-full flex-col items-center justify-center z-10 mt-12 bg-pink-light-1">
-        <div className="w-full mb-5 px-5">
-          {!isSolo && (
+        {!isSolo && (
+          <div className="w-full mb-5 px-5">
             <div className="w-full flex flex-row items-center justify-between">
               <div className="flex flex-row items-center">
                 <div className="flex w-12 h-12 mr-3 relative">
@@ -456,8 +456,8 @@ const Game: NextPage = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex flex-row flex-wrap justify-center items-center w-full">
           {cells.map((cell, idx) => (

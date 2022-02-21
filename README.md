@@ -38,3 +38,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 # References
 - https://medium.com/geekculture/deploy-a-nextjs-app-to-digitalocean-using-github-actions-and-docker-db7127bca3aa
 - https://github.com/gladly-team/next-firebase-auth/blob/main/example/pages/ssr-auth-required.js
+- https://github.com/gladly-team/next-firebase-auth/blob/main/example/pages/ssr-auth-required.js
