@@ -253,11 +253,14 @@ const Game: NextPage = () => {
     if (guessedWord === sourceOfTruth) {
       displaySuccess("Congratulations!");
       setFinished(true);
-    }
-
-    if (lineIdx === 5) {
-      displayError(`The word is ${sourceOfTruth.toUpperCase()}!`, "Next Time");
-      setFinished(true);
+    } else {
+      if (lineIdx === 5) {
+        displayError(
+          `The word is ${sourceOfTruth.toUpperCase()}!`,
+          "Next Time"
+        );
+        setFinished(true);
+      }
     }
   };
 
