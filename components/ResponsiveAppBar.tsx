@@ -42,15 +42,20 @@ const ResponsiveAppBar = () => {
           isPlaying: data.isPlaying,
           lastActivity: new Date(data.lastActivity.seconds * 1000),
           buddies: data.buddies,
-          currentStreak: data.currentStreak,
-          dailyPuzzleCompleted: data.dailyPuzzleCompleted,
-          longestStreak: data.longestStreak,
-          wonGames: data.wonGames,
           country: data.country,
           aboutMe: data.aboutMe,
           board: data.board,
           inFriendRequests: data.inFriendRequests,
           outFriendRequests: data.outFriendRequests,
+          currentDailyStreak: data.currentDailyStreak,
+          longestDailyStreak: data.longestDailyStreak,
+          dailyPuzzleCompleted: new Date(
+            data.dailyPuzzleCompleted.seconds * 1000
+          ),
+          currentPracticeStreak: data.currentPracticeStreak,
+          longestPracticeStreak: data.longestPracticeStreak,
+          currentRankStreak: data.currentRankStreak,
+          longestRankStreak: data.longestRankStreak,
         };
         result.push(newFriend);
       });
