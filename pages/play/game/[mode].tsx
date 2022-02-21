@@ -431,7 +431,7 @@ const Game: NextPage = () => {
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
 
-      <div className="flex w-full h-full flex-col items-center justify-center z-10 mt-12 bg-pink-light-1">
+      <div className="flex w-full h-full flex-col items-center justify-center z-10 pt-12 bg-pink-light-1">
         {!isSolo && (
           <div className="w-full mb-5 px-5">
             <div className="w-full flex flex-row items-center justify-between">
