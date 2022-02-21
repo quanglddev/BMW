@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  height: 100vh;
+}
+
 .bg-bmw {
   background-color: #1b2a2b;
 }
