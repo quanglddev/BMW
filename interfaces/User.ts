@@ -6,13 +6,16 @@ export default interface IUser {
   isPlaying: boolean;
   lastActivity: Date;
   buddies: string[];
-  currentStreak: number;
-  dailyPuzzleCompleted: Date;
-  longestStreak: number;
-  wonGames: number;
   country: string;
   aboutMe: string;
   board: string;
   inFriendRequests: string[];
   outFriendRequests: string[];
+  currentDailyStreak: number;
+  longestDailyStreak: number;
+  dailyPuzzleCompleted: Date;
+  currentPracticeStreak: number;
+  longestPracticeStreak: number;
+  currentRankStreak: number;
+  longestRankStreak: number;
 }

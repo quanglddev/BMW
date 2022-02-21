@@ -174,3 +174,15 @@ span::before {
 .bg-green-classic {
   background-color: #6ca967;
 }
+
+.w-400 {
+  width: 100rem;
+}
+
+.h-400 {
+  height: 100rem;
+}
+
+.-top-364 {
+  top: -90.5rem;
+}

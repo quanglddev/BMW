@@ -24,15 +24,18 @@ const FriendSettings = () => {
     isPlaying: false,
     lastActivity: new Date(),
     buddies: [],
-    currentStreak: 0,
     dailyPuzzleCompleted: new Date(),
-    longestStreak: 0,
-    wonGames: 0,
     country: "",
     aboutMe: "",
     board: "default",
     inFriendRequests: [],
     outFriendRequests: [],
+    currentDailyStreak: 0,
+    longestDailyStreak: 0,
+    currentPracticeStreak: 0,
+    longestPracticeStreak: 0,
+    currentRankStreak: 0,
+    longestRankStreak: 0,
   });
   const [allFriends, setAllFriends] = useState<IUser[]>([]);
   const [allFriendRequests, setAllFriendRequests] = useState<IUser[]>([]);
@@ -57,15 +60,18 @@ const FriendSettings = () => {
           isPlaying: data.isPlaying,
           lastActivity: new Date(data.lastActivity.seconds * 1000),
           buddies: data.buddies,
-          currentStreak: data.currentStreak,
           dailyPuzzleCompleted: data.dailyPuzzleCompleted,
-          longestStreak: data.longestStreak,
-          wonGames: data.wonGames,
           country: data.country,
           aboutMe: data.aboutMe,
           board: data.board,
           inFriendRequests: data.inFriendRequests,
           outFriendRequests: data.outFriendRequests,
+          currentDailyStreak: data.currentDailyStreak,
+          longestDailyStreak: data.longestDailyStreak,
+          currentPracticeStreak: data.currentPracticeStreak,
+          longestPracticeStreak: data.longestPracticeStreak,
+          currentRankStreak: data.currentRankStreak,
+          longestRankStreak: data.longestRankStreak,
         };
         setUser(user);
         return;

@@ -17,15 +17,24 @@ import {
   withAuthUser,
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
-import { getDocs, query, where } from "firebase/firestore";
+import {
+  doc,
+  getDocs,
+  query,
+  Timestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import {
   boardSkinsCollection,
   dailyCollection,
+  firestore,
   usersCollection,
 } from "../../../firebase/clientApp";
 import { validWords } from "../../../utils/english_words_original_wordle";
 import { validEnglishWords } from "../../../utils/validEnglishWords";
 import { Fireworks } from "fireworks/lib/react";
+import GameResultPopup from "../../../components/GameResultPopup";
 
 //create your forceUpdate hook
 const useForceUpdate = () => {
@@ -42,6 +51,9 @@ const Game: NextPage = () => {
   const [boardId, setBoardId] = useState<string>("");
   const [board, setBoard] = useState<IBoardSkin>(EmptyBoardSkin);
   const [wordOfTheDay, setWordOfTheDay] = useState<string>("intelligence");
+  const [wordOfTheDayCreatedTime, setWordOfTheDayCreatedTime] = useState<Date>(
+    new Date(0)
+  );
   const [fireworkX, setFireworkX] = useState<number>(0);
   const [fireworkY, setFireworkY] = useState<number>(0);
   const [runFirework, setRunFirework] = useState<boolean>(false);
@@ -50,6 +62,14 @@ const Game: NextPage = () => {
   const [practiceWord, setPracticeWord] = useState<string>(
     validWords[Math.floor(Math.random() * validWords.length)]
   );
+  const [showAnnouncement, setShowAnnouncement] = useState<boolean>(false);
+  const [isWon, setIsWon] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const [stats, setStats] = useState<
+    [number, number, number, number, number, number]
+  >([0, 0, 0, 0, 0, 0]);
+  const [dailyCompleted, setDailyCompleted] = useState<boolean>(false);
 
   const isSolo = mode === "daily" || mode === "practice";
 
@@ -68,8 +88,20 @@ const Game: NextPage = () => {
         return;
       }
 
-      querySnapshot.forEach((snapshot) => {
+      querySnapshot.forEach(async (snapshot) => {
         const data = snapshot.data();
+        const lastUpdated = new Date(data.lastUpdated.seconds * 1000);
+        const today = new Date();
+
+        // HACK: Update the word if new day here, should be done by server in the future
+        if (today.getDate() != lastUpdated.getDate()) {
+          const foundDocRef = doc(firestore, "daily", "1234567890");
+          await updateDoc(foundDocRef, {
+            lastUpdated: Timestamp.fromDate(today),
+            word: validWords[Math.floor(Math.random() * validWords.length)],
+          });
+        }
+        setWordOfTheDayCreatedTime(lastUpdated);
         setWordOfTheDay(data.word);
         return;
       });
@@ -103,11 +135,90 @@ const Game: NextPage = () => {
       querySnapshot.forEach((snapshot) => {
         const data = snapshot.data();
         const boardId = data.board;
+        const dailyPuzzleCompleted = new Date(
+          data.dailyPuzzleCompleted.seconds * 1000
+        );
+
+        if (
+          dailyPuzzleCompleted.getFullYear() ===
+            wordOfTheDayCreatedTime.getFullYear() &&
+          dailyPuzzleCompleted.getMonth() ===
+            wordOfTheDayCreatedTime.getMonth() &&
+          dailyPuzzleCompleted.getDate() === wordOfTheDayCreatedTime.getDate()
+        ) {
+          setDailyCompleted(true);
+        }
+
         setBoardId(boardId);
         return;
       });
     });
-  }, [AuthUser.id]);
+  }, [AuthUser.id, wordOfTheDayCreatedTime]);
+
+  useEffect(() => {
+    if (mode === "daily" && dailyCompleted) {
+      setShowAnnouncement(true);
+      setIsWon(true);
+      setTitle(wordOfTheDay.toUpperCase());
+      setMessage("Come back tomorrow");
+
+      const result: [number, number, number, number, number, number] = [
+        0, 0, 0, 0, 0, 0,
+      ];
+      let longestDailyStreak = 0;
+      let currentDailyStreak = 0;
+      let longestPracticeStreak = 0;
+      let currentPracticeStreak = 0;
+      let longestRankStreak = 0;
+      let currentRankStreak = 0;
+
+      if (!AuthUser.id) {
+        return;
+      }
+
+      const userQuery = query(usersCollection, where("id", "==", AuthUser.id));
+
+      getDocs(userQuery).then((querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
+
+        querySnapshot.forEach((snapshot) => {
+          const data = snapshot.data();
+          longestDailyStreak = data.longestDailyStreak;
+          currentDailyStreak = data.currentDailyStreak;
+          longestPracticeStreak = data.longestPracticeStreak;
+          currentPracticeStreak = data.currentPracticeStreak;
+          longestRankStreak = data.longestRankStreak;
+          currentRankStreak = data.currentRankStreak;
+          return;
+        });
+
+        result[0] = longestDailyStreak;
+        result[1] = longestPracticeStreak;
+        result[2] = longestRankStreak;
+        result[3] = currentDailyStreak;
+        result[4] = currentPracticeStreak;
+        result[5] = currentRankStreak;
+        setStats(result);
+      });
+    }
+  }, [dailyCompleted, mode, wordOfTheDay, AuthUser.id]);
+
+  const resetGame = () => {
+    const defaultData = Array(30)
+      .fill(null)
+      .map(() => createEmptyCell());
+    setCells(defaultData);
+
+    setFinished(false);
+    setPracticeWord(validWords[Math.floor(Math.random() * validWords.length)]);
+
+    setIsWon(false);
+    setTitle("");
+    setMessage("");
+    setStats([0, 0, 0, 0, 0, 0]);
+  };
 
   const displayError = (message: string, title: string = "Error") => {
     const errorAlert = withReactContent(Swal);
@@ -226,6 +337,169 @@ const Game: NextPage = () => {
     setRunFirework(false);
   };
 
+  const updateDailyStreak = async (
+    won: boolean
+  ): Promise<[number, number, number, number, number, number]> => {
+    const result: [number, number, number, number, number, number] = [
+      0, 0, 0, 0, 0, 0,
+    ];
+
+    if (!AuthUser.id) {
+      return result;
+    }
+
+    const userQuery = query(usersCollection, where("id", "==", AuthUser.id));
+    let dailyPuzzleCompleted = new Date();
+    let longestDailyStreak = 0;
+    let currentDailyStreak = 0;
+    let longestPracticeStreak = 0;
+    let currentPracticeStreak = 0;
+    let longestRankStreak = 0;
+    let currentRankStreak = 0;
+
+    const querySnapshot = await getDocs(userQuery);
+
+    if (querySnapshot.docs.length === 0) {
+      return result;
+    }
+
+    querySnapshot.forEach((snapshot) => {
+      const data = snapshot.data();
+      dailyPuzzleCompleted = new Date(data.dailyPuzzleCompleted.seconds * 1000);
+      longestDailyStreak = data.longestDailyStreak;
+      currentDailyStreak = data.currentDailyStreak;
+      longestPracticeStreak = data.longestPracticeStreak;
+      currentPracticeStreak = data.currentPracticeStreak;
+      longestRankStreak = data.longestRankStreak;
+      currentRankStreak = data.currentRankStreak;
+      return;
+    });
+
+    const today = new Date();
+
+    if (
+      wordOfTheDayCreatedTime.getFullYear() !==
+        dailyPuzzleCompleted.getFullYear() ||
+      wordOfTheDayCreatedTime.getMonth() !== dailyPuzzleCompleted.getMonth() ||
+      wordOfTheDayCreatedTime.getDate() !== dailyPuzzleCompleted.getDate()
+    ) {
+      // Lose streak
+      const foundDocRef = doc(firestore, "users", AuthUser.id!);
+      await updateDoc(foundDocRef, {
+        currentDailyStreak: won ? 1 : 0,
+        dailyPuzzleCompleted: Timestamp.fromDate(today),
+      });
+      result[0] = longestDailyStreak;
+      result[1] = longestPracticeStreak;
+      result[2] = longestRankStreak;
+      result[3] = won ? 1 : 0;
+      result[4] = currentPracticeStreak;
+      result[5] = currentRankStreak;
+    } else {
+      // Add streak
+      const foundDocRef = doc(firestore, "users", AuthUser.id!);
+      await updateDoc(foundDocRef, {
+        currentDailyStreak: won ? currentDailyStreak + 1 : 0,
+        dailyPuzzleCompleted: Timestamp.fromDate(today),
+        longestDailyStreak: Math.max(
+          longestDailyStreak,
+          won ? currentDailyStreak + 1 : 0
+        ),
+      });
+      result[0] = Math.max(
+        longestDailyStreak,
+        won ? currentDailyStreak + 1 : 0
+      );
+      result[1] = longestPracticeStreak;
+      result[2] = longestRankStreak;
+      result[3] = won ? currentDailyStreak + 1 : 0;
+      result[4] = currentPracticeStreak;
+      result[5] = currentRankStreak;
+    }
+
+    return result;
+  };
+
+  const updatePracticeStreak = async (
+    won: boolean
+  ): Promise<[number, number, number, number, number, number]> => {
+    const result: [number, number, number, number, number, number] = [
+      0, 0, 0, 0, 0, 0,
+    ];
+    let longestDailyStreak = 0;
+    let currentDailyStreak = 0;
+    let longestPracticeStreak = 0;
+    let currentPracticeStreak = 0;
+    let longestRankStreak = 0;
+    let currentRankStreak = 0;
+
+    if (!AuthUser.id) {
+      return result;
+    }
+
+    const userQuery = query(usersCollection, where("id", "==", AuthUser.id));
+
+    const querySnapshot = await getDocs(userQuery);
+    if (querySnapshot.docs.length === 0) {
+      return result;
+    }
+
+    querySnapshot.forEach((snapshot) => {
+      const data = snapshot.data();
+      longestDailyStreak = data.longestDailyStreak;
+      currentDailyStreak = data.currentDailyStreak;
+      longestPracticeStreak = data.longestPracticeStreak;
+      currentPracticeStreak = data.currentPracticeStreak;
+      longestRankStreak = data.longestRankStreak;
+      currentRankStreak = data.currentRankStreak;
+      return;
+    });
+
+    // Add streak
+    const foundDocRef = doc(firestore, "users", AuthUser.id!);
+    await updateDoc(foundDocRef, {
+      currentPracticeStreak: won ? currentPracticeStreak + 1 : 0,
+      longestPracticeStreak: Math.max(
+        longestPracticeStreak,
+        won ? currentPracticeStreak + 1 : 0
+      ),
+    });
+    result[0] = longestDailyStreak;
+    result[1] = Math.max(
+      longestPracticeStreak,
+      won ? currentPracticeStreak + 1 : 0
+    );
+    result[2] = longestRankStreak;
+    result[3] = currentDailyStreak;
+    result[4] = won ? currentPracticeStreak + 1 : 0;
+    result[5] = currentRankStreak;
+
+    return result;
+  };
+
+  const displayAnnouncement = (won: boolean) => {
+    const sourceOfTruth = mode === "daily" ? wordOfTheDay : practiceWord;
+
+    setIsWon(won);
+    setMessage(
+      won ? "Great Work!" : `The word is ${sourceOfTruth.toUpperCase()}`
+    );
+    setTitle(won ? "Victory" : "Defeat");
+    setShowAnnouncement(true);
+  };
+
+  const updateStreaks = async (won: boolean) => {
+    if (mode === "daily") {
+      const stats = await updateDailyStreak(won);
+      setStats(stats);
+    } else if (mode === "practice") {
+      const stats = await updatePracticeStreak(won);
+      setStats(stats);
+    }
+
+    displayAnnouncement(won);
+  };
+
   const startRevealingSequence = async (
     lineIdx: number,
     guessedWord: string
@@ -251,14 +525,11 @@ const Game: NextPage = () => {
 
     forceUpdate();
     if (guessedWord === sourceOfTruth) {
-      displaySuccess("Congratulations!");
+      updateStreaks(true);
       setFinished(true);
     } else {
       if (lineIdx === 5) {
-        displayError(
-          `The word is ${sourceOfTruth.toUpperCase()}!`,
-          "Next Time"
-        );
+        updateStreaks(false);
         setFinished(true);
       }
     }
@@ -430,6 +701,17 @@ const Game: NextPage = () => {
       <div className="z-50">
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
+      <div className="z-40">
+        <GameResultPopup
+          show={showAnnouncement}
+          isVictory={isWon}
+          stats={stats}
+          setShow={setShowAnnouncement}
+          message={message}
+          title={title}
+          reset={resetGame}
+        ></GameResultPopup>
+      </div>
 
       <div className="flex w-full h-full flex-col items-center justify-center z-10 pt-12 bg-pink-light-1">
         {!isSolo && (
@@ -551,6 +833,7 @@ const Game: NextPage = () => {
           </div>
         </div>
       </div>
+
       {runFirework && (
         <Fireworks
           count={1}
