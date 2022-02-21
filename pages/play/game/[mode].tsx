@@ -476,7 +476,7 @@ const Game: NextPage = () => {
               <input
                 ref={(el) => (cellsRef.current[idx] = el)}
                 type="text"
-                className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase ${getCellBackgroundColor(
+                className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${getCellBackgroundColor(
                   cell.state
                 )} ${getCellTextColor(cell.state)}`}
                 value={cell.value}
