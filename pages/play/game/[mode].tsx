@@ -426,12 +426,12 @@ const Game: NextPage = () => {
   };
 
   return (
-    <div className="relative flex w-screen h-full flex-col items-center">
+    <div className="relative flex flex-1 w-screen h-full flex-col items-center">
       <div className="z-50">
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
 
-      <div className="flex w-full h-full flex-col items-center justify-center z-10 mt-12 bg-pink-light-1">
+      <div className="flex w-full h-full flex-col items-center justify-center z-10 pt-12 bg-pink-light-1">
         {!isSolo && (
           <div className="w-full mb-5 px-5">
             <div className="w-full flex flex-row items-center justify-between">
@@ -499,8 +499,8 @@ const Game: NextPage = () => {
           ))}
         </div>
 
-        <div className="w-full flex flex-col items-center my-5 select-none h-auto justify-end">
-          <div className="w-full flex justify-center my-[5px]">
+        <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-3 right-0 left-0">
+          <div className="w-full flex justify-center mt-[5px]">
             {keyboard[0].map((keyCode) => (
               <div
                 key={keyCode.value}

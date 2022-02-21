@@ -20,7 +20,7 @@ const Settings: NextPage = () => {
   const option = parseInt(id as string, 10);
 
   return (
-    <div className="relative flex w-screen h-screen flex-col items-center">
+    <div className="relative flex w-screen h-full flex-col items-center">
       <div className="z-50">
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>

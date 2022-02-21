@@ -87,7 +87,7 @@ const Login: NextPage = () => {
   const formValid = emailValid && passwordValid;
 
   return (
-    <div className="relative flex w-screen h-screen flex-col items-center">
+    <div className="relative flex w-screen h-full flex-col items-center">
       <div className="flex flex-row items-center -mt-1 justify-center w-full drop-shadow-lg bg-red-dark-99">
         <Logo className="fill-current w-16 h-16 -ml-6"></Logo>
         <div className="-ml-3 text-lg font-bold text-white">BMWordle</div>
