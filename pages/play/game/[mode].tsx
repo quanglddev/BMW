@@ -528,7 +528,7 @@ const Game: NextPage = () => {
                 className={`flex items-center justify-center h-10 xxs:h-14 ${
                   keyCode.isWide ? "w-12" : "w-[2rem]"
                 } sm:w-10 rounded-md ${
-                  keyCode.isBigText ? "text-xl" : "text-sm"
+                  keyCode.isBigText ? "text-3xl" : "text-sm"
                 } capitalize ${getKeyBorderWidth(
                   keyCode.value
                 )} ${getKeyBorderColor(keyCode.value)} ${getKeyBackgroundColor(
