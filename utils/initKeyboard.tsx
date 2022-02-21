@@ -54,7 +54,7 @@ keyRow3.forEach((keyCode) => {
 });
 
 const deleteKey: ISingleKey = {
-  value: "␡",
+  value: "⌫",
   isWide: true,
   isBigText: true,
   status: 0,

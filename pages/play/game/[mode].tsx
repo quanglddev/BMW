@@ -499,12 +499,12 @@ const Game: NextPage = () => {
           ))}
         </div>
 
-        <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-3 right-0 left-0">
+        <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-0 right-0 left-0">
           <div className="w-full flex justify-center mt-[5px]">
             {keyboard[0].map((keyCode) => (
-              <div
+              <button
                 key={keyCode.value}
-                className={`flex items-center justify-center h-10 xxs:h-14 w-[2rem] sm:w-10 rounded-md text-sm capitalize ${getKeyBorderWidth(
+                className={`flex items-center justify-center h-16 w-8 rounded-md text-sm capitalize font-semibold ${getKeyBorderWidth(
                   keyCode.value
                 )} ${getKeyBorderColor(keyCode.value)} ${getKeyBackgroundColor(
                   keyCode.value
@@ -512,14 +512,14 @@ const Game: NextPage = () => {
                 onClick={() => onKeyBoardClick(keyCode.value)}
               >
                 {keyCode.value}
-              </div>
+              </button>
             ))}
           </div>
           <div className="w-full flex justify-center my-[5px]">
             {keyboard[1].map((keyCode) => (
-              <div
+              <button
                 key={keyCode.value}
-                className={`flex items-center justify-center h-10 xxs:h-14 w-[2rem] sm:w-10 rounded-md text-sm capitalize ${getKeyBorderWidth(
+                className={`flex items-center justify-center h-16 w-8 rounded-md text-sm capitalize font-semibold ${getKeyBorderWidth(
                   keyCode.value
                 )} ${getKeyBorderColor(keyCode.value)} ${getKeyBackgroundColor(
                   keyCode.value
@@ -527,18 +527,18 @@ const Game: NextPage = () => {
                 onClick={() => onKeyBoardClick(keyCode.value)}
               >
                 {keyCode.value}
-              </div>
+              </button>
             ))}
           </div>
           <div className="w-full flex justify-center my-[5px]">
             {keyboard[2].map((keyCode) => (
-              <div
+              <button
                 key={keyCode.value}
-                className={`flex items-center justify-center h-10 xxs:h-14 ${
-                  keyCode.isWide ? "w-12" : "w-[2rem]"
-                } sm:w-10 rounded-md ${
-                  keyCode.isBigText ? "text-3xl" : "text-sm"
-                } capitalize ${getKeyBorderWidth(
+                className={`flex items-center justify-center h-16 ${
+                  keyCode.isWide ? "w-12" : "w-8"
+                } rounded-md ${
+                  keyCode.isBigText ? "text-xl" : "text-sm"
+                } capitalize font-semibold ${getKeyBorderWidth(
                   keyCode.value
                 )} ${getKeyBorderColor(keyCode.value)} ${getKeyBackgroundColor(
                   keyCode.value
@@ -546,7 +546,7 @@ const Game: NextPage = () => {
                 onClick={() => onKeyBoardClick(keyCode.value)}
               >
                 {keyCode.value}
-              </div>
+              </button>
             ))}
           </div>
         </div>

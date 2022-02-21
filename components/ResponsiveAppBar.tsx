@@ -77,10 +77,12 @@ const ResponsiveAppBar = () => {
   return (
     <div className="flex flex-row items-center fixed top-0 left-0 right-0 bg-red-dark-99 h-12">
       {/* Navigation Bar */}
-      <Hamburger
-        className="fill-current text-pink-light-1 w-8 h-8 ml-3"
-        onClick={() => setSideBarOpen(true)}
-      ></Hamburger>
+      <button className="w-8 h-8 ml-3">
+        <Hamburger
+          className="fill-current text-pink-light-1 w-full h-full"
+          onClick={() => setSideBarOpen(true)}
+        ></Hamburger>
+      </button>
 
       <div
         className="flex flex-row items-center"
@@ -105,64 +107,64 @@ const ResponsiveAppBar = () => {
             ></Close>
 
             {/* Daily */}
-            <div
+            <button
               className="flex flex-row items-center w-10/12 h-12 mt-3 ml-3"
               onClick={() => navigateTo("/play/game/daily")}
             >
               <Today className="w-8 h-8"></Today>
               <div className="text-black ml-2">Daily Puzzle</div>
-            </div>
+            </button>
 
             {/* Muscle */}
-            <div
+            <button
               className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3"
               onClick={() => navigateTo("/play/game/practice")}
             >
               <Muscle className="fill-current w-8 h-8"></Muscle>
               <div className="text-black ml-2">Practice</div>
-            </div>
+            </button>
 
             {/* Wifi */}
-            <div className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
+            <button className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
               <Wifi className="fill-current w-8 h-8"></Wifi>
               <div className="text-black ml-2">Rank match</div>
-            </div>
+            </button>
 
             {/* Friends */}
-            <div className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
+            <button className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
               <Friends className="fill-current w-8 h-8"></Friends>
               <div className="text-black ml-2">Friendly match</div>
-            </div>
+            </button>
 
             {/* Add friend button */}
-            <div
+            <button
               className="flex items-center justify-center bg-red-dark-99 w-10/12 h-10 rounded ml-3 mt-2"
               onClick={() => navigateTo("/settings/2")}
             >
               <AddFriend className="fill-current text-white w-4 h-4"></AddFriend>
-            </div>
+            </button>
 
             {/* Login/logout button */}
-            <div
+            <button
               className="flex items-center justify-center bg-button-1 w-10/12 h-10 rounded ml-3 mt-3"
               onClick={async () => await AuthUser.signOut()}
             >
               <LogOut className="fill-current text-icon w-5 h-5"></LogOut>
-            </div>
+            </button>
           </div>
           <div className="flex flex-col justify-center my-2">
-            <div
+            <button
               className="flex flex-row items-center"
               onClick={() => navigateTo("/settings/0")}
             >
               <Settings className="h-5 w-5 ml-3 fill-current text-gray-700"></Settings>
               <div className="ml-2 text-md text-gray-700">Settings</div>
-            </div>
+            </button>
 
-            <div className="flex flex-row items-center my-2">
+            <button className="flex flex-row items-center my-2">
               <Help className="h-5 w-5 ml-3 fill-current text-gray-700"></Help>
               <div className="ml-2 text-md text-gray-700">Help</div>
-            </div>
+            </button>
           </div>
         </div>
 

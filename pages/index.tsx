@@ -69,56 +69,62 @@ const Home: NextPage = () => {
         </div>
 
         {/* Daily */}
-        <div
+        <button
           className="flex flex-row w-10/12 h-24 bg-red-dark-99 rounded-xl mt-5 items-center border-b-4 border-red-800 drop-shadow-2xl"
           onClick={() => router.push("/play/game/daily")}
         >
           <Today className="w-16 h-16 ml-3"></Today>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-white text-xl">Daily Puzzle</div>
-            <div className="text-gray-100 text-xs mt-1">
-              Consistency is more important than perfection
+            <div className="font-bold text-white text-xl text-left">
+              Daily Puzzle
+            </div>
+            <div className="text-gray-100 text-xs mt-1 text-left">
+              The key to success is consistency
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Muscle */}
-        <div
+        <button
           className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl"
           onClick={() => router.push("/play/game/practice")}
         >
           <Muscle className="fill-current w-16 h-16 ml-3"></Muscle>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-gray-700 text-xl">Practice</div>
-            <div className="text-gray-500 text-xs mt-1">
+            <div className="font-bold text-gray-700 text-xl text-left">
+              Practice
+            </div>
+            <div className="text-gray-500 text-xs mt-1 text-left">
               Practice makes perfect
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Wifi */}
-        <div className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
+        <button className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
           <Wifi className="fill-current w-16 h-16 ml-3"></Wifi>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-gray-700 text-xl">Rank Match</div>
-            <div className="text-gray-500 text-xs mt-1">
+            <div className="font-bold text-gray-700 text-xl text-left">
+              Rank Match
+            </div>
+            <div className="text-gray-500 text-xs mt-1 text-left">
               Play with someone at your level
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Friends */}
-        <div className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
+        <button className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
           <Friends className="fill-current w-16 h-16 ml-3"></Friends>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-gray-700 text-xl">
+            <div className="font-bold text-gray-700 text-xl text-left">
               Friendly Match
             </div>
-            <div className="text-gray-500 text-xs mt-1">
+            <div className="text-gray-500 text-xs mt-1 text-left">
               Play with your friends
             </div>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );
