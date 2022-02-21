@@ -94,7 +94,7 @@ const ResponsiveAppBar = () => {
       <div
         className={`${
           sideBarOpen ? "flex" : "hidden"
-        } flex fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-50 flex-row`}
+        } flex fixed top-0 left-0 right-0 bottom-0 w-full h-full z-50 flex-row`}
       >
         {/* Quick Options */}
         <div className="flex flex-col bg-pink-light-1 h-full w-6/12">
