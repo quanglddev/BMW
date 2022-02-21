@@ -164,7 +164,7 @@ const Game: NextPage = () => {
   };
 
   const removeLastFilledCell = () => {
-    let lastFilledCellIdx = -1;
+    let lastFilledCellIdx = cells.length;
     for (let i = 0; i < cells.length; i++) {
       if (!cells[i].value) {
         lastFilledCellIdx = i;
@@ -199,6 +199,10 @@ const Game: NextPage = () => {
         firstEmptyCellIdx = i;
         break;
       }
+    }
+
+    if (firstEmptyCellIdx === -1 || firstEmptyCellIdx >= cells.length) {
+      return;
     }
 
     let lineIdx = getLatestNotCommittedLineIdx();
@@ -479,7 +483,7 @@ const Game: NextPage = () => {
                 maxLength={1}
                 onChange={(e) => updateCellValue(idx, e.target.value)}
                 onClick={(e) => onClickCell(idx)}
-                readOnly={cell.state !== 0}
+                readOnly
                 onKeyDown={(e) => e.preventDefault()}
               />
             </div>

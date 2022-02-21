@@ -107,7 +107,7 @@ const ResponsiveAppBar = () => {
             {/* Daily */}
             <div
               className="flex flex-row items-center w-10/12 h-12 mt-3 ml-3"
-              onClick={() => router.push("/play/game/daily")}
+              onClick={() => navigateTo("/play/game/daily")}
             >
               <Today className="w-8 h-8"></Today>
               <div className="text-black ml-2">Daily Puzzle</div>
@@ -116,7 +116,7 @@ const ResponsiveAppBar = () => {
             {/* Muscle */}
             <div
               className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3"
-              onClick={() => router.push("/play/game/practice")}
+              onClick={() => navigateTo("/play/game/practice")}
             >
               <Muscle className="fill-current w-8 h-8"></Muscle>
               <div className="text-black ml-2">Practice</div>
