@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { collection, getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 initializeApp({
   apiKey: process.env.FIREBASE_API_KEY,
@@ -12,8 +13,18 @@ initializeApp({
 });
 
 const firestore = getFirestore();
+const storage = getStorage();
 
 const gamesCollection = collection(firestore, "games");
 const usersCollection = collection(firestore, "users");
+const boardSkinsCollection = collection(firestore, "boardSkins");
+const dailyCollection = collection(firestore, "daily");
 
-export { firestore, usersCollection, gamesCollection };
+export {
+  firestore,
+  storage,
+  usersCollection,
+  gamesCollection,
+  boardSkinsCollection,
+  dailyCollection,
+};

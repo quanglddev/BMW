@@ -41,7 +41,11 @@ const nextConfig = {
       process.env.FIREBASE_COOKIE_SECRET_PREVIOUS,
   },
   images: {
-    domains: ["avatars.githubusercontent.com"],
+    domains: [
+      "avatars.githubusercontent.com",
+      "ui-avatars.com",
+      "firebasestorage.googleapis.com",
+    ],
   },
 };
 

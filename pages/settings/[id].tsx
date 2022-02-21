@@ -1,54 +1,18 @@
-import { MouseEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import type { NextPage } from "next";
-import Link from "next/link";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import {
-  withAuthUser,
-  AuthAction,
-  withAuthUserTokenSSR,
-} from "next-firebase-auth";
-import { firestore, usersCollection } from "../../firebase/clientApp";
-import {
-  collection,
-  QueryDocumentSnapshot,
-  DocumentData,
-  query,
-  where,
-  limit,
-  getDocs,
-  onSnapshot,
-} from "@firebase/firestore";
 import ResponsiveAppBar from "../../components/ResponsiveAppBar";
-import Logo from "../../public/icons/logo.svg";
 import SettingsIcon from "../../public/icons/settings.svg";
 import Account from "../../public/icons/account.svg";
 import Chess from "../../public/icons/chess.svg";
 import Friends from "../../public/icons/friends2.svg";
-import Unavailable from "../../public/icons/unavailable.svg";
-import Close from "../../public/icons/close.svg";
-import Camera from "../../public/icons/camera.svg";
-import USA from "../../public/icons/usa.svg";
-import Diamond from "../../public/icons/diamond.svg";
-import Image from "next/image";
 import Profile from "../../components/Profile";
 import BoardSelection from "../../components/BoardSelection";
 import FriendSettings from "../../components/FriendSettings";
-import BlockSettings from "../../components/BlockSettings";
 
 const Settings: NextPage = () => {
   const router = useRouter();
-  const { id: defaultOption } = router.query;
-  // Determine what content to show based on chosen page of settings
-  const [options, setOptions] = useState<number>(0);
-
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    setOptions(parseInt(defaultOption as string, 10));
-  }, [router.isReady, defaultOption]);
+  const { id } = router.query;
+  const option = parseInt(id as string, 10);
 
   return (
     <div className="relative flex w-screen h-screen flex-col items-center">
@@ -67,35 +31,35 @@ const Settings: NextPage = () => {
         <div className="flex flex-col justify-center absolute left-0 top-24 w-12 bg-white rounded-r-md drop-shadow-xl">
           <div
             className="flex justify-center items-center w-12 h-12 border-b-2 border-red-dark-99"
-            onClick={() => setOptions(0)}
+            onClick={() => router.push("/settings/0")}
           >
             <Account className="w-6 h-6"></Account>
           </div>
           <div
             className="flex justify-center items-center w-12 h-12 border-b-2 border-red-dark-99"
-            onClick={() => setOptions(1)}
+            onClick={() => router.push("/settings/1")}
           >
             <Chess className="w-6 h-6"></Chess>
           </div>
           <div
             className="flex justify-center items-center w-12 h-12 border-b-2 border-red-dark-99"
-            onClick={() => setOptions(2)}
+            onClick={() => router.push("/settings/2")}
           >
             <Friends className="w-6 h-6"></Friends>
           </div>
-          <div
+          {/* <div
             className="flex justify-center items-center w-12 h-12 border-b-2 border-red-dark-99"
-            onClick={() => setOptions(3)}
+            onClick={() => router.push("/settings/3")}
           >
             <Unavailable className="w-6 h-6"></Unavailable>
-          </div>
+          </div> */}
         </div>
 
         {/* Content */}
-        {options === 0 ? <Profile></Profile> : <></>}
-        {options === 1 ? <BoardSelection></BoardSelection> : <></>}
-        {options === 2 ? <FriendSettings></FriendSettings> : <></>}
-        {options === 3 ? <BlockSettings></BlockSettings> : <></>}
+        {option === 0 ? <Profile></Profile> : <></>}
+        {option === 1 ? <BoardSelection></BoardSelection> : <></>}
+        {option === 2 ? <FriendSettings></FriendSettings> : <></>}
+        {/* {option === 3 ? <BlockSettings></BlockSettings> : <></>} */}
       </div>
     </div>
   );

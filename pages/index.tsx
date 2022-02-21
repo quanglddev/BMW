@@ -1,41 +1,18 @@
 import { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import {
-  firestore,
-  gamesCollection,
-  usersCollection,
-} from "../firebase/clientApp";
-import {
-  collection,
-  QueryDocumentSnapshot,
-  DocumentData,
-  query,
-  where,
-  limit,
-  getDocs,
-  onSnapshot,
-} from "@firebase/firestore";
-
-import {
-  AuthAction,
-  useAuthUser,
-  withAuthUser,
-  withAuthUserTokenSSR,
-} from "next-firebase-auth";
+import { gamesCollection } from "../firebase/clientApp";
+import { query, onSnapshot } from "@firebase/firestore";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
-import Bluetooth from "../public/icons/bluetooth.svg";
+import Muscle from "../public/icons/muscle.svg";
 import Wifi from "../public/icons/wifi.svg";
 import Friends from "../public/icons/friends.svg";
 import Today from "../public/icons/today2.svg";
 import Game from "../interfaces/Game";
+import { useRouter } from "next/router";
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const [allGames, setAllGames] = useState<Game[]>([]);
-  // const AuthUser = useAuthUser();
-  // const [friends, setFriends] = useState<QueryDocumentSnapshot<DocumentData>[]>(
-  //   []
-  // );
-  // const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const gamesQuery = query(gamesCollection);
@@ -87,7 +64,10 @@ const Home: NextPage = () => {
         </div>
 
         {/* Daily */}
-        <div className="flex flex-row w-10/12 h-24 bg-red-dark-99 rounded-xl mt-5 items-center border-b-4 border-red-800 drop-shadow-2xl">
+        <div
+          className="flex flex-row w-10/12 h-24 bg-red-dark-99 rounded-xl mt-5 items-center border-b-4 border-red-800 drop-shadow-2xl"
+          onClick={() => router.push("/play/game/daily")}
+        >
           <Today className="w-16 h-16 ml-3"></Today>
           <div className="flex flex-col ml-3">
             <div className="font-bold text-white text-xl">Daily Puzzle</div>
@@ -97,13 +77,16 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        {/* Bluetooth */}
-        <div className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
-          <Bluetooth className="fill-current w-16 h-16 ml-3"></Bluetooth>
+        {/* Muscle */}
+        <div
+          className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl"
+          onClick={() => router.push("/play/game/practice")}
+        >
+          <Muscle className="fill-current w-16 h-16 ml-3"></Muscle>
           <div className="flex flex-col ml-3">
-            <div className="font-bold text-gray-700 text-xl">Local Match</div>
+            <div className="font-bold text-gray-700 text-xl">Practice</div>
             <div className="text-gray-500 text-xs mt-1">
-              Play with someone near you
+              Practice makes perfect
             </div>
           </div>
         </div>
@@ -136,13 +119,13 @@ const Home: NextPage = () => {
   );
 };
 
-// // Note that this is a higher-order function.
-export const getServerSideProps = withAuthUserTokenSSR({
-  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
-})();
+// Note that this is a higher-order function.
+// export const getServerSideProps = withAuthUserTokenSSR({
+//   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+// })();
 
-export default withAuthUser({
-  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-})(Home);
+// export default withAuthUser({
+//   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+// })(Home);
 
-// export default Home;
+export default Home;

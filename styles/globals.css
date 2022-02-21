@@ -145,3 +145,27 @@ span::before {
 .border-red-dark-99 {
   border-color: #da3948;
 }
+
+.bg-yellow-bright-99 {
+  background-color: #fcee51;
+}
+
+.text-yellow-bright-99 {
+  color: #fcee51;
+}
+
+.border-yellow-bright-99 {
+  border-color: #fcee51;
+}
+
+.bg-gray-classic {
+  background-color: #787c7e;
+}
+
+.bg-yellow-classic {
+  background-color: #c9b35f;
+}
+
+.bg-green-classic {
+  background-color: #6ca967;
+}
