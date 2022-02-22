@@ -42,7 +42,7 @@ const useForceUpdate = () => {
   return () => setValue((value) => value + 1); // update the state to force render
 };
 
-const Game: NextPage = () => {
+const PracticeGame: NextPage = () => {
   const AuthUser = useAuthUser();
   const router = useRouter();
   const { mode } = router.query;
@@ -864,4 +864,4 @@ export const getServerSideProps = withAuthUserTokenSSR({
 
 export default withAuthUser({
   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
-})(Game);
+})(PracticeGame);
