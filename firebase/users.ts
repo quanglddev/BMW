@@ -1,6 +1,15 @@
-import { DocumentData, getDocs, query, where } from "firebase/firestore";
+import {
+  doc,
+  DocumentData,
+  getDocs,
+  query,
+  setDoc,
+  Timestamp,
+  where,
+} from "firebase/firestore";
+import { AuthUserContext, useAuthUser } from "next-firebase-auth";
 import IUser from "../interfaces/User";
-import { usersCollection } from "./clientApp";
+import { firestore, usersCollection } from "./clientApp";
 
 export const firebaseDataToUser = (data: DocumentData): IUser => {
   const user: IUser = {
@@ -28,11 +37,45 @@ export const firebaseDataToUser = (data: DocumentData): IUser => {
   return user;
 };
 
+export const initializeUserInfo = async (authUser: AuthUserContext) => {
+  if (!authUser.id) {
+    return;
+  }
+  const foundDocRef = doc(firestore, "users", authUser.id);
+  await setDoc(
+    foundDocRef,
+    {
+      id: authUser.id,
+      fullName: authUser.displayName ?? "",
+      email: authUser.email ?? "",
+      imageUrl:
+        authUser.photoURL ?? "https://ui-avatars.com/api/?background=random",
+      isPlaying: false,
+      lastActivity: Timestamp.fromDate(new Date(0)),
+      buddies: [],
+      country: "United States",
+      aboutMe: "",
+      board: "7Pp3tkwa3IT0QqwuHVAj",
+      inFriendRequests: [],
+      outFriendRequests: [],
+      currentDailyStreak: 0,
+      longestDailyStreak: 0,
+      dailyPuzzleCompleted: Timestamp.fromDate(new Date(0)),
+      currentPracticeStreak: 0,
+      longestPracticeStreak: 0,
+      currentRankStreak: 0,
+      longestRankStreak: 0,
+    },
+    { merge: true }
+  );
+};
+
 export const queryUser = async (userId: string) => {
   const userQuery = query(usersCollection, where("id", "==", userId));
 
   const querySnapshot = await getDocs(userQuery);
   if (querySnapshot.docs.length === 0) {
+    // Initialize user info
     return;
   }
 

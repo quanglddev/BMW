@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import ResponsiveAppBar from "../../../components/ResponsiveAppBar";
 import {
@@ -11,14 +10,21 @@ import {
 import { puzzleWords } from "../../../utils/puzzleWords";
 import Playground from "../../../components/Playground";
 import { updatePracticeStreak } from "../../../firebase/streaks";
+import { initializeUserInfo } from "../../../firebase/users";
 
 const PracticeGame: NextPage = () => {
   const AuthUser = useAuthUser();
-  const router = useRouter();
-  const { mode } = router.query;
   const [practiceWord, setPracticeWord] = useState<string>(
     puzzleWords[Math.floor(Math.random() * puzzleWords.length)]
   );
+
+  useEffect(() => {
+    if (!AuthUser.id) {
+      return;
+    }
+
+    initializeUserInfo(AuthUser);
+  }, [AuthUser]);
 
   const onFinished = (userId: string, won: boolean) => {
     updatePracticeStreak(userId, won);

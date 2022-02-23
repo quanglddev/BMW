@@ -13,7 +13,7 @@ import {
   IDailyPuzzle,
 } from "../../../interfaces/IDailyPuzzle";
 import { queryDailyWord } from "../../../firebase/daily";
-import { queryUser } from "../../../firebase/users";
+import { initializeUserInfo, queryUser } from "../../../firebase/users";
 import Playground from "../../../components/Playground";
 import { AnnouncementStatus } from "../../../interfaces/IAnnouncement";
 import { updateDailyStreak } from "../../../firebase/streaks";
@@ -23,6 +23,14 @@ const DailyGame: NextPage = () => {
   const router = useRouter();
   const [dailyWord, setDailyWord] = useState<IDailyPuzzle>(EmptyDailyPuzzle);
   const [dailyCompleted, setDailyCompleted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!AuthUser.id) {
+      return;
+    }
+
+    initializeUserInfo(AuthUser);
+  }, [AuthUser]);
 
   useEffect(() => {
     const fetchData = async () => {
