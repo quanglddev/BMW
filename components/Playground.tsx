@@ -39,7 +39,6 @@ const Playground = (props: Props) => {
     defaultAnnouncementConfig,
     onFinished,
   } = props;
-  console.log("🚀 ~ file: Playground.tsx ~ line 42 ~ Playground ~ word", word);
   const router = useRouter();
   const forceUpdate = useForceUpdate();
   const cellsRef = useRef<(HTMLInputElement | null)[]>([]);
@@ -150,6 +149,21 @@ const Playground = (props: Props) => {
 
   const displayAnnouncement = (won: boolean) => {
     if (mode === "daily") {
+      const config: IAnnouncement = {
+        userId,
+        status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
+        title: won ? "Victory" : "Defeat",
+        message: won ? "Great Work!" : `The word is ${word.toUpperCase()}`,
+        buttonText: "Practice Now",
+        onMainButtonClick: () => {
+          router.push("/play/game/practice");
+        },
+        onClose: () => {
+          router.push("/");
+        },
+      };
+
+      setAnnouncementConfig(config);
     } else {
       const config: IAnnouncement = {
         userId,

@@ -27,6 +27,7 @@ export const updateDailyStreak = async (
     const foundDocRef = doc(firestore, "users", userId);
     await updateDoc(foundDocRef, {
       currentDailyStreak: won ? 1 : 0,
+      longestDailyStreak: Math.max(user.longestDailyStreak, won ? 1 : 0),
       dailyPuzzleCompleted: Timestamp.fromDate(today),
     });
   } else {
