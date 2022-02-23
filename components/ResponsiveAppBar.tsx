@@ -16,6 +16,7 @@ import { getDocs, query, where } from "firebase/firestore";
 import { usersCollection } from "../firebase/clientApp";
 import IUser from "../interfaces/User";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";
+import { queryFriends } from "../firebase/users";
 
 const ResponsiveAppBar = () => {
   const AuthUser = useAuthUser();
@@ -24,44 +25,16 @@ const ResponsiveAppBar = () => {
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const friendsQuery = query(
-      usersCollection,
-      where("buddies", "array-contains", AuthUser.id)
-    );
+    const fetchData = async () => {
+      if (!AuthUser.id) {
+        return;
+      }
 
-    getDocs(friendsQuery).then((querySnapshot) => {
-      const result: IUser[] = [];
+      const friends = await queryFriends(AuthUser.id);
+      setAllFriends(friends);
+    };
 
-      querySnapshot.forEach((snapshot) => {
-        const data = snapshot.data();
-        const newFriend: IUser = {
-          id: snapshot.id,
-          fullName: data.fullName,
-          email: data.email,
-          imageUrl: data.imageUrl,
-          isPlaying: data.isPlaying,
-          lastActivity: new Date(data.lastActivity.seconds * 1000),
-          buddies: data.buddies,
-          country: data.country,
-          aboutMe: data.aboutMe,
-          board: data.board,
-          inFriendRequests: data.inFriendRequests,
-          outFriendRequests: data.outFriendRequests,
-          currentDailyStreak: data.currentDailyStreak,
-          longestDailyStreak: data.longestDailyStreak,
-          dailyPuzzleCompleted: new Date(
-            data.dailyPuzzleCompleted.seconds * 1000
-          ),
-          currentPracticeStreak: data.currentPracticeStreak,
-          longestPracticeStreak: data.longestPracticeStreak,
-          currentRankStreak: data.currentRankStreak,
-          longestRankStreak: data.longestRankStreak,
-        };
-        result.push(newFriend);
-      });
-
-      setAllFriends(result);
-    });
+    fetchData();
   }, [AuthUser.id]);
 
   const navigateTo = (path: string) => {

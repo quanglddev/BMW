@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Close from "../public/icons/close.svg";
 import Circle from "../public/icons/circle.svg";
-import { getDocs, query, where } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 import { usersCollection } from "../firebase/clientApp";
 import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 
@@ -27,22 +27,30 @@ const GameResultPopup = (props: Props) => {
 
     const userQuery = query(usersCollection, where("id", "==", config.userId));
 
-    getDocs(userQuery).then((querySnapshot) => {
-      if (querySnapshot.docs.length === 0) {
-        return;
-      }
+    const unsubscribeStats = onSnapshot(
+      userQuery,
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
 
-      querySnapshot.forEach((snapshot) => {
-        const data = snapshot.data();
-        setLongestDailyStreak(data.longestDailyStreak);
-        setCurrentDailyStreak(data.currentDailyStreak);
-        setLongestPracticeStreak(data.longestPracticeStreak);
-        setCurrentPracticeStreak(data.currentPracticeStreak);
-        setLongestRankStreak(data.longestRankStreak);
-        setCurrentRankStreak(data.currentRankStreak);
-        return;
-      });
-    });
+        querySnapshot.forEach((snapshot) => {
+          const data = snapshot.data();
+          setLongestDailyStreak(data.longestDailyStreak);
+          setCurrentDailyStreak(data.currentDailyStreak);
+          setLongestPracticeStreak(data.longestPracticeStreak);
+          setCurrentPracticeStreak(data.currentPracticeStreak);
+          setLongestRankStreak(data.longestRankStreak);
+          setCurrentRankStreak(data.currentRankStreak);
+          return;
+        });
+      }
+    );
+
+    return () => {
+      unsubscribeStats();
+    };
   }, [config.userId]);
 
   return (
@@ -66,14 +74,14 @@ const GameResultPopup = (props: Props) => {
             <div className="z-50 font-sans font-semibold text-3xl text-white mt-3 absolute">
               {config.title}
             </div>
-            <div className="z-50 font-sans font-semibold text-md text-gray-300 mt-12 absolute">
+            <div className="z-50 font-sans font-semibold text-md text-white mt-14 absolute">
               {config.message}
             </div>
             <button
               className="absolute top-3 right-3 w-6 h-6 z-50"
               onClick={() => config.onClose()}
             >
-              <Close className="fill-current w-full h-full text-gray-300"></Close>
+              <Close className="fill-current w-full h-full text-gray-100"></Close>
             </button>
 
             <div className="flex flex-col items-center mt-28 w-full">

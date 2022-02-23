@@ -1,36 +1,4 @@
-import { useEffect, useState, MouseEvent, useRef, ChangeEvent } from "react";
-import Image from "next/image";
-import { Menu, MenuButton, MenuItem, MenuRadioGroup } from "@szhsin/react-menu";
-import IUser from "../interfaces/User";
-import {
-  doc,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import {
-  boardSkinsCollection,
-  firestore,
-  storage,
-  usersCollection,
-} from "../firebase/clientApp";
-import Camera from "../public/icons/camera.svg";
-import USA from "../public/icons/usa.svg";
-import Vietnam from "../public/icons/vietnam.svg";
-import Iron from "../public/icons/iron.svg";
-import Bronze from "../public/icons/bronze.svg";
-import Silver from "../public/icons/silver.svg";
-import Gold from "../public/icons/gold.svg";
-import Platinum from "../public/icons/platinum.svg";
-import Emerald from "../public/icons/emerald.svg";
-import Diamond from "../public/icons/diamond.svg";
-import { v4 as uuidv4 } from "uuid";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { useAuthUser, withAuthUser } from "next-firebase-auth";
+import { useEffect, useState, useRef } from "react";
 import {
   EmptyBoardSkin,
   IBoardCell,
@@ -42,10 +10,10 @@ import BoardSkinManager from "../models/BoardSkinManager";
 import { displayError } from "../utils/SweetAlertHelper";
 import keyboard from "../utils/initKeyboard";
 import { validEnglishWords } from "../utils/validEnglishWords";
-import { updateStreaks } from "../firebase/streaks";
 import GameResultPopup from "./GameResultPopup";
-import { IAnnouncement } from "../interfaces/IAnnouncement";
+import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 import Fireworks from "fireworks/lib/react";
+import { useRouter } from "next/router";
 
 // Create your forceUpdate hook
 const useForceUpdate = () => {
@@ -57,10 +25,22 @@ interface Props {
   userId: string;
   word: string;
   mode: string;
+  defaultShowAnnouncement?: boolean;
+  defaultAnnouncementConfig?: IAnnouncement;
+  onFinished: (userId: string, won: boolean) => void;
 }
 
 const Playground = (props: Props) => {
-  const { userId, word, mode } = props;
+  const {
+    userId,
+    word,
+    mode,
+    defaultShowAnnouncement,
+    defaultAnnouncementConfig,
+    onFinished,
+  } = props;
+  console.log("🚀 ~ file: Playground.tsx ~ line 42 ~ Playground ~ word", word);
+  const router = useRouter();
   const forceUpdate = useForceUpdate();
   const cellsRef = useRef<(HTMLInputElement | null)[]>([]);
   const [cells, setCells] = useState<IBoardCell[]>([]);
@@ -71,9 +51,10 @@ const Playground = (props: Props) => {
   const [fireworkY, setFireworkY] = useState<number>(0);
   const [runFirework, setRunFirework] = useState<boolean>(false);
   const [finished, setFinished] = useState<boolean>(false);
+
   const [showAnnouncement, setShowAnnouncement] = useState<boolean>(false);
   const [announcementConfig, setAnnouncementConfig] =
-    useState<IAnnouncement | null>(null);
+    useState<IAnnouncement | null>();
 
   useEffect(() => {
     const defaultData: IBoardCell[] = Array(30)
@@ -105,6 +86,17 @@ const Playground = (props: Props) => {
 
     fetchData();
   }, [userId]);
+
+  useEffect(() => {
+    setBoardSkinManager(new BoardSkinManager(cells, boardSkin));
+  }, [cells, boardSkin]);
+
+  useEffect(() => {
+    if (!announcementConfig) {
+      return;
+    }
+    setShowAnnouncement(true);
+  }, [announcementConfig]);
 
   const updateCellValue = (cellIdx: number, value: string) => {
     const clone = JSON.parse(JSON.stringify(cells)) as IBoardCell[];
@@ -143,13 +135,50 @@ const Playground = (props: Props) => {
     setRunFirework(false);
   };
 
+  const resetGame = () => {
+    const defaultData = Array(30)
+      .fill(null)
+      .map(() => ({
+        value: "",
+        state: 0,
+      }));
+    setCells(defaultData);
+    setAnnouncementConfig(null);
+    setShowAnnouncement(false);
+    setFinished(false);
+  };
+
   const displayAnnouncement = (won: boolean) => {
-    setIsWon(won);
-    setMessage(
-      won ? "Great Work!" : `The word is ${sourceOfTruth.toUpperCase()}`
-    );
-    setTitle(won ? "Victory" : "Defeat");
-    setShowAnnouncement(true);
+    if (mode === "daily") {
+    } else {
+      const config: IAnnouncement = {
+        userId,
+        status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
+        title: won ? "Victory" : "Defeat",
+        message: won ? "Great Work!" : `The word is ${word.toUpperCase()}`,
+        buttonText: "New Game",
+        onMainButtonClick: () => {
+          resetGame();
+        },
+        onClose: () => {
+          router.push("/");
+        },
+      };
+
+      setAnnouncementConfig(config);
+    }
+  };
+
+  const checkIfFinished = (guessedWord: string, filledLineIdx: number) => {
+    if (guessedWord === word) {
+      onFinished(userId, true);
+      displayAnnouncement(true);
+      setFinished(true);
+    } else if (filledLineIdx === 5) {
+      onFinished(userId, false);
+      displayAnnouncement(false);
+      setFinished(true);
+    }
   };
 
   const startRevealingSequence = async (
@@ -172,21 +201,14 @@ const Playground = (props: Props) => {
         clone[lineIdx * 5 + i].state = 1;
       }
       setCells(clone);
+      forceUpdate();
     }
-
     forceUpdate();
-    if (guessedWord === word) {
-      updateStreaks(userId, mode, true);
-      displayAnnouncement(won);
-      setFinished(true);
-    } else if (lineIdx === 5) {
-      updateStreaks(userId, mode, false);
-      displayAnnouncement(won);
-      setFinished(true);
-    }
+
+    checkIfFinished(guessedWord, lineIdx);
   };
 
-  const checkLastFilledLine = () => {
+  const onEnterClicked = () => {
     let lineIdx = getLatestNotCommittedLineIdx();
 
     const cellsOnLine = cells.slice(lineIdx * 5, lineIdx * 5 + 5);
@@ -204,7 +226,7 @@ const Playground = (props: Props) => {
     startRevealingSequence(lineIdx, guessedWord);
   };
 
-  const removeLastFilledCell = () => {
+  const onDeleteClicked = () => {
     let lastFilledCellIdx = cells.length;
     for (let i = 0; i < cells.length; i++) {
       if (!cells[i].value) {
@@ -223,7 +245,7 @@ const Playground = (props: Props) => {
     }
   };
 
-  const insertFirstEmptyCell = (value: string) => {
+  const onInsertLetter = (value: string) => {
     let firstEmptyCellIdx = -1;
     for (let i = 0; i < cells.length; i++) {
       if (!cells[i].value) {
@@ -251,11 +273,11 @@ const Playground = (props: Props) => {
     }
 
     if (keyCode.toLowerCase() === "enter") {
-      checkLastFilledLine();
+      onEnterClicked();
     } else if (keyCode.toLowerCase() === "⌫") {
-      removeLastFilledCell();
+      onDeleteClicked();
     } else {
-      insertFirstEmptyCell(keyCode);
+      onInsertLetter(keyCode);
     }
   };
 
@@ -305,12 +327,19 @@ const Playground = (props: Props) => {
   return (
     <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1">
       <div className="z-40">
-        <GameResultPopup
-          show={showAnnouncement}
-          config={isWon}
-        ></GameResultPopup>
+        {showAnnouncement && announcementConfig && (
+          <GameResultPopup
+            show={showAnnouncement}
+            config={announcementConfig}
+          ></GameResultPopup>
+        )}
+        {defaultShowAnnouncement && defaultAnnouncementConfig && (
+          <GameResultPopup
+            show={defaultShowAnnouncement}
+            config={defaultAnnouncementConfig}
+          ></GameResultPopup>
+        )}
       </div>
-
       <div className="flex flex-row flex-wrap justify-center items-center w-full">
         {cells.map((cell, idx) => (
           <div

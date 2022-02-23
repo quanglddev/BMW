@@ -1,7 +1,7 @@
 import { useEffect, useState, MouseEvent, useRef, ChangeEvent } from "react";
 import Image from "next/image";
 import { Menu, MenuButton, MenuItem, MenuRadioGroup } from "@szhsin/react-menu";
-import IUser from "../interfaces/User";
+import IUser, { EmptyUser } from "../interfaces/User";
 import {
   doc,
   getDocs,
@@ -26,6 +26,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";
+import { queryUser } from "../firebase/users";
 
 const supportedImageExtensions = ["jpeg", "png", "jpg"];
 
@@ -33,27 +34,7 @@ const Profile = () => {
   const AuthUser = useAuthUser();
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const [user, setUser] = useState<IUser>({
-    id: "",
-    fullName: "",
-    imageUrl: "",
-    email: "",
-    isPlaying: false,
-    lastActivity: new Date(0),
-    buddies: [],
-    country: "",
-    aboutMe: "",
-    board: "default",
-    inFriendRequests: [],
-    outFriendRequests: [],
-    currentDailyStreak: 0,
-    longestDailyStreak: 0,
-    dailyPuzzleCompleted: new Date(0),
-    currentPracticeStreak: 0,
-    longestPracticeStreak: 0,
-    currentRankStreak: 0,
-    longestRankStreak: 0,
-  });
+  const [user, setUser] = useState<IUser>(EmptyUser);
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>(
@@ -105,48 +86,27 @@ const Profile = () => {
   }, [user.id]);
 
   useEffect(() => {
-    const userQuery = query(usersCollection, where("id", "==", AuthUser.id));
-
-    getDocs(userQuery).then((querySnapshot) => {
-      if (querySnapshot.docs.length === 0) {
+    const fetchData = async () => {
+      if (!AuthUser.id) {
         return;
       }
 
-      querySnapshot.forEach((snapshot) => {
-        const data = snapshot.data();
-        const user: IUser = {
-          id: snapshot.id,
-          fullName: data.fullName,
-          email: data.email,
-          imageUrl: data.imageUrl,
-          isPlaying: data.isPlaying,
-          lastActivity: new Date(data.lastActivity.seconds * 1000),
-          buddies: data.buddies,
-          country: data.country,
-          aboutMe: data.aboutMe,
-          board: data.board,
-          inFriendRequests: data.inFriendRequests,
-          outFriendRequests: data.outFriendRequests,
-          currentDailyStreak: data.currentDailyStreak,
-          longestDailyStreak: data.longestDailyStreak,
-          dailyPuzzleCompleted: new Date(
-            data.dailyPuzzleCompleted.seconds * 1000
-          ),
-          currentPracticeStreak: data.currentPracticeStreak,
-          longestPracticeStreak: data.longestPracticeStreak,
-          currentRankStreak: data.currentRankStreak,
-          longestRankStreak: data.longestRankStreak,
-        };
-        setUser(user);
-        setImageUrl(user.imageUrl);
-        setFullName(user.fullName);
-        setEmail(user.email);
-        setCountry(user.country);
-        setAboutMe(user.aboutMe);
-        setMadeChanges(false);
+      const user = await queryUser(AuthUser.id);
+
+      if (!user) {
         return;
-      });
-    });
+      }
+
+      setUser(user);
+      setImageUrl(user.imageUrl);
+      setFullName(user.fullName);
+      setEmail(user.email);
+      setCountry(user.country);
+      setAboutMe(user.aboutMe);
+      setMadeChanges(false);
+    };
+
+    fetchData();
   }, [AuthUser.id]);
 
   const onSaveUserInfo = async (

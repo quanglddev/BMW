@@ -1,17 +1,8 @@
-import { getDocs, query, where } from "firebase/firestore";
+import { DocumentData, getDocs, query, where } from "firebase/firestore";
 import IUser from "../interfaces/User";
 import { usersCollection } from "./clientApp";
 
-export const queryUser = async (userId: string) => {
-  const userQuery = query(usersCollection, where("id", "==", userId));
-
-  const querySnapshot = await getDocs(userQuery);
-  if (querySnapshot.docs.length === 0) {
-    return;
-  }
-
-  const data = querySnapshot.docs[0].data();
-
+export const firebaseDataToUser = (data: DocumentData): IUser => {
   const user: IUser = {
     id: data.id,
     fullName: data.fullName,
@@ -35,4 +26,37 @@ export const queryUser = async (userId: string) => {
   };
 
   return user;
+};
+
+export const queryUser = async (userId: string) => {
+  const userQuery = query(usersCollection, where("id", "==", userId));
+
+  const querySnapshot = await getDocs(userQuery);
+  if (querySnapshot.docs.length === 0) {
+    return;
+  }
+
+  const data = querySnapshot.docs[0].data();
+
+  const user = firebaseDataToUser(data);
+  return user;
+};
+
+export const queryFriends = async (userId: string): Promise<IUser[]> => {
+  const result: IUser[] = [];
+
+  const friendsQuery = query(
+    usersCollection,
+    where("buddies", "array-contains", userId)
+  );
+
+  const querySnapshot = await getDocs(friendsQuery);
+
+  querySnapshot.forEach((snapshot) => {
+    const data = snapshot.data();
+    const newFriend = firebaseDataToUser(data);
+    result.push(newFriend);
+  });
+
+  return result;
 };
