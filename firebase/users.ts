@@ -41,6 +41,14 @@ export const initializeUserInfo = async (authUser: AuthUserContext) => {
   if (!authUser.id) {
     return;
   }
+
+  const user = await queryUser(authUser.id);
+
+  if (user) {
+    // If user already exist, don't overwrite
+    return;
+  }
+
   const foundDocRef = doc(firestore, "users", authUser.id);
   await setDoc(
     foundDocRef,
