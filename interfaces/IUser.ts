@@ -18,6 +18,11 @@ export default interface IUser {
   longestPracticeStreak: number;
   currentRankStreak: number;
   longestRankStreak: number;
+  ongoingDailyGuess: string;
+  dailyGuessLastAttempt: Date;
+  currentPracticeWord: string;
+  previousPracticeWord: string;
+  ongoingPracticeGuess: string;
 }
 
 export const EmptyUser: IUser = {
@@ -40,4 +45,9 @@ export const EmptyUser: IUser = {
   longestPracticeStreak: 0,
   currentRankStreak: 0,
   longestRankStreak: 0,
+  ongoingDailyGuess: "",
+  dailyGuessLastAttempt: new Date(0),
+  currentPracticeWord: "",
+  previousPracticeWord: "",
+  ongoingPracticeGuess: "",
 };

@@ -7,8 +7,8 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
-import { AuthUserContext, useAuthUser } from "next-firebase-auth";
-import IUser from "../interfaces/User";
+import { AuthUserContext } from "next-firebase-auth";
+import IUser from "../interfaces/IUser";
 import { firestore, usersCollection } from "./clientApp";
 
 export const firebaseDataToUser = (data: DocumentData): IUser => {
@@ -32,6 +32,11 @@ export const firebaseDataToUser = (data: DocumentData): IUser => {
     longestPracticeStreak: data.longestPracticeStreak,
     currentRankStreak: data.currentRankStreak,
     longestRankStreak: data.longestRankStreak,
+    ongoingDailyGuess: data.ongoingDailyGuess,
+    dailyGuessLastAttempt: new Date(data.dailyGuessLastAttempt.seconds * 1000),
+    currentPracticeWord: data.currentPracticeWord,
+    previousPracticeWord: data.previousPracticeWord,
+    ongoingPracticeGuess: data.ongoingPracticeGuess,
   };
 
   return user;
@@ -73,6 +78,11 @@ export const initializeUserInfo = async (authUser: AuthUserContext) => {
       longestPracticeStreak: 0,
       currentRankStreak: 0,
       longestRankStreak: 0,
+      ongoingDailyGuess: "",
+      dailyGuessLastAttempt: new Date(0),
+      currentPracticeWord: "",
+      previousPracticeWord: "",
+      ongoingPracticeGuess: "",
     },
     { merge: true }
   );
@@ -102,6 +112,25 @@ export const queryFriends = async (userId: string): Promise<IUser[]> => {
   );
 
   const querySnapshot = await getDocs(friendsQuery);
+
+  querySnapshot.forEach((snapshot) => {
+    const data = snapshot.data();
+    const newFriend = firebaseDataToUser(data);
+    result.push(newFriend);
+  });
+
+  return result;
+};
+
+export const queryFriendRequests = async (userId: string): Promise<IUser[]> => {
+  const result: IUser[] = [];
+
+  const friendRequestsQuery = query(
+    usersCollection,
+    where("outFriendRequests", "array-contains", userId)
+  );
+
+  const querySnapshot = await getDocs(friendRequestsQuery);
 
   querySnapshot.forEach((snapshot) => {
     const data = snapshot.data();

@@ -1,7 +1,7 @@
 import { useEffect, useState, MouseEvent, useRef, ChangeEvent } from "react";
 import Image from "next/image";
 import { Menu, MenuButton, MenuItem, MenuRadioGroup } from "@szhsin/react-menu";
-import IUser, { EmptyUser } from "../interfaces/User";
+import IUser, { EmptyUser } from "../interfaces/IUser";
 import {
   doc,
   getDocs,

@@ -84,7 +84,7 @@ const DailyGame: NextPage = () => {
               userId: AuthUser.id,
               status: AnnouncementStatus.success,
               title: "Daily Completed",
-              message: `The word is ${dailyWord.word.toUpperCase()}`,
+              message: `The word was ${dailyWord.word.toUpperCase()}`,
               buttonText: "Go To Practice",
               onMainButtonClick: () => {
                 router.push("/play/game/practice");

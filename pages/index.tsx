@@ -7,7 +7,7 @@ import Muscle from "../public/icons/muscle.svg";
 import Wifi from "../public/icons/wifi.svg";
 import Friends from "../public/icons/friends.svg";
 import Today from "../public/icons/today2.svg";
-import Game from "../interfaces/Game";
+import Game from "../interfaces/IGame";
 import { useRouter } from "next/router";
 import {
   AuthAction,
