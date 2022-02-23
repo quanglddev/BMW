@@ -1,50 +1,57 @@
-/* eslint-disable @next/next/no-img-element */
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import Logo from "../public/icons/logo.svg";
-import Hamburger from "../public/icons/hamburger.svg";
+import { useEffect, useState } from "react";
 import Close from "../public/icons/close.svg";
-import Muscle from "../public/icons/muscle.svg";
-import Wifi from "../public/icons/wifi.svg";
-import Friends from "../public/icons/friends.svg";
-import AddFriend from "../public/icons/addFriend.svg";
-import LogOut from "../public/icons/logout.svg";
-import Settings from "../public/icons/settings.svg";
-import Help from "../public/icons/help.svg";
-import Today from "../public/icons/today.svg";
 import Circle from "../public/icons/circle.svg";
-import { getDocs, query, where } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 import { usersCollection } from "../firebase/clientApp";
-import IUser from "../interfaces/User";
-import { useAuthUser, withAuthUser } from "next-firebase-auth";
+import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 
 interface Props {
   show: boolean;
-  isVictory: boolean;
-  stats: [number, number, number, number, number, number];
-  setShow: Dispatch<SetStateAction<boolean>>;
-  message: string;
-  title: string;
-  reset: () => void;
+  config: IAnnouncement;
 }
 
 const GameResultPopup = (props: Props) => {
-  const { show, isVictory, stats, setShow, message, title, reset } = props;
-  const longestDailyStreak = stats[0];
-  const longestPracticeStreak = stats[1];
-  const longestRankStreak = stats[2];
-  const currentDailyStreak = stats[3];
-  const currentPracticeStreak = stats[4];
-  const currentRankStreak = stats[5];
-  const router = useRouter();
+  const { show, config } = props;
 
-  const onNavigateTo = (path: string) => {
-    router.push(path);
-    setShow(false);
-    if (path === "/play/game/practice") {
-      reset();
+  const [longestDailyStreak, setLongestDailyStreak] = useState<number>(0);
+  const [longestPracticeStreak, setLongestPracticeStreak] = useState<number>(0);
+  const [longestRankStreak, setLongestRankStreak] = useState<number>(0);
+  const [currentDailyStreak, setCurrentDailyStreak] = useState<number>(0);
+  const [currentPracticeStreak, setCurrentPracticeStreak] = useState<number>(0);
+  const [currentRankStreak, setCurrentRankStreak] = useState<number>(0);
+
+  useEffect(() => {
+    if (!config.userId) {
+      return;
     }
-  };
+
+    const userQuery = query(usersCollection, where("id", "==", config.userId));
+
+    const unsubscribeStats = onSnapshot(
+      userQuery,
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
+
+        querySnapshot.forEach((snapshot) => {
+          const data = snapshot.data();
+          setLongestDailyStreak(data.longestDailyStreak);
+          setCurrentDailyStreak(data.currentDailyStreak);
+          setLongestPracticeStreak(data.longestPracticeStreak);
+          setCurrentPracticeStreak(data.currentPracticeStreak);
+          setLongestRankStreak(data.longestRankStreak);
+          setCurrentRankStreak(data.currentRankStreak);
+          return;
+        });
+      }
+    );
+
+    return () => {
+      unsubscribeStats();
+    };
+  }, [config.userId]);
 
   return (
     <div className="flex flex-row items-center fixed top-0 left-0 right-0 bg-red-dark-99 h-12">
@@ -59,20 +66,22 @@ const GameResultPopup = (props: Props) => {
           <div className="flex justify-center h-80 w-10/12 bg-white drop-shadow-2xl rounded-2xl relative overflow-hidden">
             <Circle
               className={`fill-current absolute -top-364 w-400 h-400 ${
-                isVictory ? "text-red-dark-99" : "text-gray-dark-99"
+                config.status === AnnouncementStatus.success
+                  ? "text-red-dark-99"
+                  : "text-gray-dark-99"
               } z-40`}
             ></Circle>
             <div className="z-50 font-sans font-semibold text-3xl text-white mt-3 absolute">
-              {title}
+              {config.title}
             </div>
-            <div className="z-50 font-sans font-semibold text-md text-gray-300 mt-12 absolute">
-              {message}
+            <div className="z-50 font-sans font-semibold text-md text-white mt-14 absolute">
+              {config.message}
             </div>
             <button
               className="absolute top-3 right-3 w-6 h-6 z-50"
-              onClick={() => setShow(false)}
+              onClick={() => config.onClose()}
             >
-              <Close className="fill-current w-full h-full text-gray-300"></Close>
+              <Close className="fill-current w-full h-full text-gray-100"></Close>
             </button>
 
             <div className="flex flex-col items-center mt-28 w-full">
@@ -112,10 +121,10 @@ const GameResultPopup = (props: Props) => {
               </div>
               <button
                 className={`flex flex-row w-10/12 h-12 bg-red-dark-99 rounded-xl mt-5 items-center justify-center border-b-2 border-red-800 drop-shadow-2xl mb-5`}
-                onClick={() => onNavigateTo("/play/game/practice")}
+                onClick={() => config.onMainButtonClick()}
               >
                 <div className="font-bold text-white font-sans text-xl">
-                  Practice
+                  {config.buttonText}
                 </div>
               </button>
             </div>

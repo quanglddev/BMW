@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Search from "../public/icons/search.svg";
 
 const BlockSettings = () => {

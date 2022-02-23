@@ -11,13 +11,24 @@ import Game from "../interfaces/Game";
 import { useRouter } from "next/router";
 import {
   AuthAction,
+  useAuthUser,
   withAuthUser,
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
+import { initializeUserInfo } from "../firebase/users";
 
 const Home: NextPage = () => {
+  const AuthUser = useAuthUser();
   const router = useRouter();
   const [allGames, setAllGames] = useState<Game[]>([]);
+
+  useEffect(() => {
+    if (!AuthUser.id) {
+      return;
+    }
+
+    initializeUserInfo(AuthUser);
+  }, [AuthUser]);
 
   useEffect(() => {
     const gamesQuery = query(gamesCollection);
