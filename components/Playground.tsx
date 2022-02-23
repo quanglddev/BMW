@@ -3,8 +3,8 @@ import {
   EmptyBoardSkin,
   IBoardCell,
   IBoardSkin,
-} from "../interfaces/BoardSkin";
-import { queryUser } from "../firebase/users";
+} from "../interfaces/IBoardSkin";
+import { firebaseDataToUser, queryUser } from "../firebase/users";
 import { queryBoardSkin } from "../firebase/boardSkins";
 import BoardSkinManager from "../models/BoardSkinManager";
 import { displayError } from "../utils/SweetAlertHelper";
@@ -14,6 +14,14 @@ import GameResultPopup from "./GameResultPopup";
 import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 import Fireworks from "fireworks/lib/react";
 import { useRouter } from "next/router";
+import { onSnapshot, query, where } from "firebase/firestore";
+import { usersCollection } from "../firebase/clientApp";
+import {
+  stringToCells,
+  updateBoard,
+  wipeBoardIfNewDay,
+  wipeBoardIfNewPracticeWord as wipeBoardIfNewPracticeWordAndFinished,
+} from "../firebase/board";
 
 // Create your forceUpdate hook
 const useForceUpdate = () => {
@@ -56,16 +64,79 @@ const Playground = (props: Props) => {
     useState<IAnnouncement | null>();
 
   useEffect(() => {
-    const defaultData: IBoardCell[] = Array(30)
-      .fill(null)
-      .map(() => ({
-        value: "",
-        state: 0,
-      }));
+    if (!userId) {
+      return;
+    }
 
-    setCells(defaultData);
-    setBoardSkinManager(new BoardSkinManager(defaultData, boardSkin));
-  }, [boardSkin]);
+    if (mode !== "daily") {
+      return;
+    }
+
+    const userQuery = query(usersCollection, where("id", "==", userId));
+
+    const unsubscribeStats = onSnapshot(
+      userQuery,
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
+
+        const user = firebaseDataToUser(querySnapshot.docs[0].data());
+
+        const dailyGuess = user.ongoingDailyGuess;
+
+        const newCells: IBoardCell[] = stringToCells(dailyGuess);
+
+        setCells(newCells);
+        wipeBoardIfNewDay(mode, newCells, userId);
+        setBoardSkinManager(new BoardSkinManager(newCells, boardSkin));
+      }
+    );
+
+    return () => {
+      unsubscribeStats();
+    };
+  }, [userId, mode, boardSkin]);
+
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    if (mode !== "practice") {
+      return;
+    }
+
+    const userQuery = query(usersCollection, where("id", "==", userId));
+
+    const unsubscribeStats = onSnapshot(
+      userQuery,
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
+
+        const user = firebaseDataToUser(querySnapshot.docs[0].data());
+
+        const practiceGuess = user.ongoingPracticeGuess;
+
+        const newCells: IBoardCell[] = stringToCells(practiceGuess);
+
+        setCells(newCells);
+        setBoardSkinManager(new BoardSkinManager(newCells, boardSkin));
+      }
+    );
+
+    return () => {
+      unsubscribeStats();
+    };
+  }, [userId, mode, boardSkin]);
+
+  useEffect(() => {
+    wipeBoardIfNewPracticeWordAndFinished(mode, userId);
+  }, [mode, userId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,6 +163,7 @@ const Playground = (props: Props) => {
 
   useEffect(() => {
     if (!announcementConfig) {
+      setShowAnnouncement(false);
       return;
     }
     setShowAnnouncement(true);
@@ -100,7 +172,7 @@ const Playground = (props: Props) => {
   const updateCellValue = (cellIdx: number, value: string) => {
     const clone = JSON.parse(JSON.stringify(cells)) as IBoardCell[];
     clone[cellIdx].value = value;
-    setCells(clone);
+    updateBoard(mode, clone, userId);
   };
 
   const onClickCell = (cellIdx: number) => {
@@ -141,7 +213,7 @@ const Playground = (props: Props) => {
         value: "",
         state: 0,
       }));
-    setCells(defaultData);
+    updateBoard(mode, defaultData, userId);
     setAnnouncementConfig(null);
     setShowAnnouncement(false);
     setFinished(false);
@@ -164,7 +236,7 @@ const Playground = (props: Props) => {
       };
 
       setAnnouncementConfig(config);
-    } else {
+    } else if (mode === "practice") {
       const config: IAnnouncement = {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
@@ -183,7 +255,9 @@ const Playground = (props: Props) => {
     }
   };
 
-  const checkIfFinished = (guessedWord: string, filledLineIdx: number) => {
+  const checkIfFinished = (guessedWord: string) => {
+    let filledLineIdx = getLatestNotCommittedLineIdx();
+
     if (guessedWord === word) {
       onFinished(userId, true);
       displayAnnouncement(true);
@@ -214,19 +288,30 @@ const Playground = (props: Props) => {
       } else {
         clone[lineIdx * 5 + i].state = 1;
       }
-      setCells(clone);
+      updateBoard(mode, clone, userId);
       forceUpdate();
     }
     forceUpdate();
 
-    checkIfFinished(guessedWord, lineIdx);
+    checkIfFinished(guessedWord);
+  };
+
+  const getGuessedWord = (): string => {
+    let lineIdx = getLatestNotCommittedLineIdx();
+
+    if (cells.length === 0) {
+      return "";
+    }
+
+    const cellsOnLine = cells.slice(lineIdx * 5, lineIdx * 5 + 5);
+    const guessedWord = cellsOnLine.map((cell) => cell.value).join("");
+    return guessedWord;
   };
 
   const onEnterClicked = () => {
     let lineIdx = getLatestNotCommittedLineIdx();
 
-    const cellsOnLine = cells.slice(lineIdx * 5, lineIdx * 5 + 5);
-    const guessedWord = cellsOnLine.map((cell) => cell.value).join("");
+    const guessedWord = getGuessedWord();
     if (guessedWord.length !== 5) {
       displayError("You need to fill out the line");
       return;

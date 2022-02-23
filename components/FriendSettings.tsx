@@ -9,137 +9,65 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { firestore, usersCollection } from "../firebase/clientApp";
-import IUser from "../interfaces/User";
+import {
+  queryUser,
+  queryFriends,
+  queryFriendRequests,
+} from "../firebase/users";
+import IUser, { EmptyUser } from "../interfaces/IUser";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";
+import { displayError, displaySuccess } from "../utils/SweetAlertHelper";
 
 const FriendSettings = () => {
   const AuthUser = useAuthUser();
-  const [user, setUser] = useState<IUser>({
-    id: "",
-    fullName: "",
-    imageUrl: "",
-    email: "",
-    isPlaying: false,
-    lastActivity: new Date(),
-    buddies: [],
-    dailyPuzzleCompleted: new Date(),
-    country: "",
-    aboutMe: "",
-    board: "default",
-    inFriendRequests: [],
-    outFriendRequests: [],
-    currentDailyStreak: 0,
-    longestDailyStreak: 0,
-    currentPracticeStreak: 0,
-    longestPracticeStreak: 0,
-    currentRankStreak: 0,
-    longestRankStreak: 0,
-  });
+  const [user, setUser] = useState<IUser>(EmptyUser);
   const [allFriends, setAllFriends] = useState<IUser[]>([]);
   const [allFriendRequests, setAllFriendRequests] = useState<IUser[]>([]);
   const [email, setEmail] = useState<string>("");
   const [reloadRequest, setReloadRequest] = useState<boolean>(false);
 
   useEffect(() => {
-    const userQuery = query(usersCollection, where("id", "==", AuthUser.id));
-
-    getDocs(userQuery).then((querySnapshot) => {
-      if (querySnapshot.docs.length === 0) {
+    const fetchData = async () => {
+      if (!AuthUser.id) {
         return;
       }
-
-      querySnapshot.forEach((snapshot) => {
-        const data = snapshot.data();
-        const user: IUser = {
-          id: snapshot.id,
-          fullName: data.fullName,
-          email: data.email,
-          imageUrl: data.imageUrl,
-          isPlaying: data.isPlaying,
-          lastActivity: new Date(data.lastActivity.seconds * 1000),
-          buddies: data.buddies,
-          dailyPuzzleCompleted: data.dailyPuzzleCompleted,
-          country: data.country,
-          aboutMe: data.aboutMe,
-          board: data.board,
-          inFriendRequests: data.inFriendRequests,
-          outFriendRequests: data.outFriendRequests,
-          currentDailyStreak: data.currentDailyStreak,
-          longestDailyStreak: data.longestDailyStreak,
-          currentPracticeStreak: data.currentPracticeStreak,
-          longestPracticeStreak: data.longestPracticeStreak,
-          currentRankStreak: data.currentRankStreak,
-          longestRankStreak: data.longestRankStreak,
-        };
-        setUser(user);
+      const user = await queryUser(AuthUser.id);
+      if (!user) {
         return;
-      });
-    });
+      }
+      setUser(user);
+    };
+
+    fetchData();
   }, [AuthUser.id]);
 
   useEffect(() => {
-    const friendsQuery = query(
-      usersCollection,
-      where("buddies", "array-contains", AuthUser.id)
-    );
+    const fetchData = async () => {
+      if (!AuthUser.id) {
+        return;
+      }
 
-    getDocs(friendsQuery).then((querySnapshot) => {
-      const result: IUser[] = [];
+      const friends = await queryFriends(AuthUser.id);
+      setAllFriends(friends);
+    };
 
-      querySnapshot.forEach((snapshot) => {
-        const data = snapshot.data();
-        const newFriend: IUser = data as IUser;
-        result.push(newFriend);
-      });
-
-      setAllFriends(result);
-    });
+    fetchData();
   }, [reloadRequest, AuthUser.id]);
 
   useEffect(() => {
-    const friendRequestsQuery = query(
-      usersCollection,
-      where("outFriendRequests", "array-contains", AuthUser.id)
-    );
+    const fetchData = async () => {
+      if (!AuthUser.id) {
+        return;
+      }
 
-    getDocs(friendRequestsQuery).then((querySnapshot) => {
-      const result: IUser[] = [];
+      const friendRequests = await queryFriendRequests(AuthUser.id);
+      setAllFriendRequests(friendRequests);
+    };
 
-      querySnapshot.forEach((snapshot) => {
-        const data = snapshot.data();
-        const newRequest: IUser = data as IUser;
-        result.push(newRequest);
-      });
-
-      setAllFriendRequests(result);
-    });
+    fetchData();
   }, [reloadRequest, AuthUser.id]);
-
-  const displayError = (message: string) => {
-    const errorAlert = withReactContent(Swal);
-
-    errorAlert
-      .fire({
-        title: "Error",
-        text: message,
-        icon: "error",
-      })
-      .then(() => {});
-  };
-
-  const displaySuccess = (message: string) => {
-    const errorAlert = withReactContent(Swal);
-
-    errorAlert
-      .fire({
-        title: "Success",
-        text: message,
-        icon: "success",
-      })
-      .then(() => {});
-  };
 
   const onRequestFriendship = () => {
     if (email === user.email) {

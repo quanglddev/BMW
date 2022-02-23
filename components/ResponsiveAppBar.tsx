@@ -12,9 +12,8 @@ import LogOut from "../public/icons/logout.svg";
 import Settings from "../public/icons/settings.svg";
 import Help from "../public/icons/help.svg";
 import Today from "../public/icons/today.svg";
-import { getDocs, query, where } from "firebase/firestore";
-import { usersCollection } from "../firebase/clientApp";
-import IUser from "../interfaces/User";
+import LeaderBoard from "../public/icons/leaderBoard.svg";
+import IUser from "../interfaces/IUser";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";
 import { queryFriends } from "../firebase/users";
 
@@ -55,19 +54,37 @@ const ResponsiveAppBar = () => {
   return (
     <div className="flex flex-row items-center fixed top-0 left-0 right-0 bg-red-dark-99 h-12">
       {/* Navigation Bar */}
-      <button className="w-8 h-8 ml-3">
-        <Hamburger
-          className="fill-current text-pink-light-1 w-full h-full"
-          onClick={() => setSideBarOpen(true)}
-        ></Hamburger>
-      </button>
+      <div className="flex flex-row justify-between items-center w-full">
+        <div className="flex flex-row items-center">
+          <button className="w-8 h-8 ml-3">
+            <Hamburger
+              className="fill-current text-pink-light-1 w-full h-full"
+              onClick={() => setSideBarOpen(true)}
+            ></Hamburger>
+          </button>
 
-      <div
-        className="flex flex-row items-center"
-        onClick={() => navigateTo("/")}
-      >
-        <Logo className="fill-current w-16 h-16 -ml-1"></Logo>
-        <div className="-ml-3 text-lg text-white">BMWordle</div>
+          <div
+            className="flex flex-row items-center"
+            onClick={() => navigateTo("/")}
+          >
+            <Logo className="fill-current w-16 h-16 -ml-1"></Logo>
+            <div className="-ml-3 text-lg text-white">BMWordle</div>
+          </div>
+        </div>
+        <div className="flex flex-row items-center">
+          {/* <button className="w-8 h-8 mr-3">
+            <LeaderBoard
+              className="fill-current text-pink-light-1 w-full h-full"
+              onClick={() => setSideBarOpen(true)}
+            ></LeaderBoard>
+          </button>
+          <button className="w-6 h-6 mr-3">
+            <Settings
+              className="fill-current text-black w-full h-full"
+              onClick={() => setSideBarOpen(true)}
+            ></Settings>
+          </button> */}
+        </div>
       </div>
 
       {/* Side Bar */}

@@ -1,5 +1,5 @@
 import { getDocs, query, where } from "firebase/firestore";
-import { IBoardSkin } from "../interfaces/BoardSkin";
+import { IBoardSkin } from "../interfaces/IBoardSkin";
 import { boardSkinsCollection } from "./clientApp";
 
 export const queryBoardSkin = async (boardId: string) => {

@@ -1,4 +1,4 @@
-import { IBoardCell, IBoardSkin } from "../interfaces/BoardSkin";
+import { IBoardCell, IBoardSkin } from "../interfaces/IBoardSkin";
 
 export default class BoardSkinManager {
   constructor(public cells: IBoardCell[], public boardSkin: IBoardSkin) {}

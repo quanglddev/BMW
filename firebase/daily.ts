@@ -2,6 +2,7 @@ import { doc, getDocs, query, Timestamp, updateDoc } from "firebase/firestore";
 import { puzzleWords } from "../utils/puzzleWords";
 import { dailyCollection, firestore } from "./clientApp";
 import { IDailyPuzzle } from "../interfaces/IDailyPuzzle";
+import IUser from "../interfaces/IUser";
 
 export const queryDailyWord = async (): Promise<IDailyPuzzle | undefined> => {
   const dailyQuery = query(dailyCollection);
@@ -34,4 +35,25 @@ export const queryDailyWord = async (): Promise<IDailyPuzzle | undefined> => {
     word: data.word,
     lastUpdated,
   };
+};
+
+export const checkIfDailyCompleted = async (user: IUser): Promise<boolean> => {
+  const loadedDailyWord = await queryDailyWord();
+
+  if (!loadedDailyWord) {
+    return false;
+  }
+
+  if (
+    user.dailyPuzzleCompleted.getFullYear() ===
+      loadedDailyWord.lastUpdated.getFullYear() &&
+    user.dailyPuzzleCompleted.getMonth() ===
+      loadedDailyWord.lastUpdated.getMonth() &&
+    user.dailyPuzzleCompleted.getDate() ===
+      loadedDailyWord.lastUpdated.getDate()
+  ) {
+    return true;
+  }
+
+  return false;
 };

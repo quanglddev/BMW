@@ -10,7 +10,7 @@ import {
   EmptyBoardSkin,
   IBoardCell,
   IBoardSkin,
-} from "../interfaces/BoardSkin";
+} from "../interfaces/IBoardSkin";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";

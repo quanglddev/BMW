@@ -1,4 +1,4 @@
-import { ISingleKey } from "../interfaces/SingleKey";
+import { ISingleKey } from "../interfaces/ISingleKey";
 
 const keyboard: ISingleKey[][] = [];
 

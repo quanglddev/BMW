@@ -7,16 +7,14 @@ import {
   withAuthUser,
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
-import { puzzleWords } from "../../../utils/puzzleWords";
 import Playground from "../../../components/Playground";
 import { updatePracticeStreak } from "../../../firebase/streaks";
 import { initializeUserInfo } from "../../../firebase/users";
+import { generateNewPracticeWordIfEmpty } from "../../../firebase/board";
 
 const PracticeGame: NextPage = () => {
   const AuthUser = useAuthUser();
-  const [practiceWord, setPracticeWord] = useState<string>(
-    puzzleWords[Math.floor(Math.random() * puzzleWords.length)]
-  );
+  const [practiceWord, setPracticeWord] = useState<string>("");
 
   useEffect(() => {
     if (!AuthUser.id) {
@@ -26,11 +24,22 @@ const PracticeGame: NextPage = () => {
     initializeUserInfo(AuthUser);
   }, [AuthUser]);
 
-  const onFinished = (userId: string, won: boolean) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!AuthUser.id) {
+        return;
+      }
+      const newWord = await generateNewPracticeWordIfEmpty(AuthUser.id);
+      setPracticeWord(newWord);
+    };
+
+    fetchData();
+  }, [AuthUser.id]);
+
+  const onFinished = async (userId: string, won: boolean) => {
     updatePracticeStreak(userId, won);
-    setPracticeWord(
-      puzzleWords[Math.floor(Math.random() * puzzleWords.length)]
-    );
+    const newWord = await generateNewPracticeWordIfEmpty(userId, true);
+    setPracticeWord(newWord);
   };
 
   return (
