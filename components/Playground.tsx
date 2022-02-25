@@ -242,7 +242,7 @@ const Playground = (props: Props) => {
             title: winning ? "Victory" : "Defeat",
             message: winning
               ? "Win by disconnect"
-              : `Lose by disconnect. The word is ${word.toUpperCase()}`,
+              : `Lose by disconnect. (${word.toUpperCase()})`,
             buttonText: "New Rank Match",
             onMainButtonClick: () => {
               router.push("/play/game/rank");
@@ -549,6 +549,8 @@ const Playground = (props: Props) => {
     if (finished) {
       return;
     }
+
+    setShowMyBoard(true);
 
     if (keyCode.toLowerCase() === "enter") {
       onEnterClicked();
