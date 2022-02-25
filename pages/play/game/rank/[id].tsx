@@ -19,6 +19,7 @@ import { onSnapshot, query, where } from "firebase/firestore";
 import { roomsCollection } from "../../../../firebase/clientApp";
 import { IRoom } from "../../../../interfaces/IRoom";
 import { closeRoomIfWon, queryRoomDetail } from "../../../../firebase/rooms";
+import { exitWaitRoom } from "../../../../firebase/waitRoom";
 
 const RankGame: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -32,6 +33,7 @@ const RankGame: NextPage = () => {
     }
 
     initializeUserInfo(AuthUser);
+    exitWaitRoom(AuthUser.id);
   }, [AuthUser]);
 
   useEffect(() => {

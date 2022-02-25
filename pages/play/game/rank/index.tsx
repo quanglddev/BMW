@@ -20,6 +20,7 @@ import {
   createJointRoom,
   exitWaitRoom,
   joinWaitRoom,
+  removeRankRoomId,
 } from "../../../../firebase/waitRoom";
 import { onSnapshot, query } from "firebase/firestore";
 import { waitRoomCollection } from "../../../../firebase/clientApp";
@@ -50,9 +51,16 @@ const RankMatchmaking: NextPage = () => {
         const data = querySnapshot.docs[0].data();
         const ids = data.ids as string[];
 
-        if (!ids || ids.length <= 1) {
+        const user = await queryUser(AuthUser.id);
+
+        if (user && user.rankRoomId) {
+          removeRankRoomId(user);
+          router.push(`/play/game/rank/${user.rankRoomId}`);
+        }
+
+        if (!ids || ids.length === 0) {
           await joinWaitRoom(AuthUser.id);
-        } else if (ids.length > 1) {
+        } else if (ids.length > 0) {
           const roomId = await createJointRoom(AuthUser.id, ids);
           if (!roomId) {
             return;
@@ -190,7 +198,7 @@ const RankMatchmaking: NextPage = () => {
       )}
 
       {AuthUser.id && (
-        <div className="flex items-center justify-center w-full h-12 bg-white z-50">
+        <div className="flex items-center justify-center w-full h-12 bg-white z-50 fixed bottom-0 right-0 left-0">
           <button
             className="w-8 h-8"
             onClick={() => onCancelMatchmaking(AuthUser.id!)}

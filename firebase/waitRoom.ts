@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { puzzleWords } from "../utils/puzzleWords";
 import { IRoom } from "../interfaces/IRoom";
+import IUser from "../interfaces/IUser";
 
 export const queryWaitRoom = async (): Promise<string[]> => {
   const waitRoomQuery = query(waitRoomCollection);
@@ -61,6 +62,9 @@ export const createJointRoom = async (
   await updateDoc(foundDocRef, {
     ids: arrayRemove(chosenOpponentId),
   });
+  await updateDoc(foundDocRef, {
+    ids: arrayRemove(userId),
+  });
 
   // Create a room now
   const roomId = uuidv4();
@@ -77,5 +81,19 @@ export const createJointRoom = async (
   };
 
   await setDoc(foundRef, newRoom, { merge: true });
+
+  // Let the other know
+  const opponentRef = doc(firestore, "users", chosenOpponentId);
+  await updateDoc(opponentRef, {
+    rankRoomId: roomId,
+  });
+
   return newRoom.id;
+};
+
+export const removeRankRoomId = async (user: IUser) => {
+  const ref = doc(firestore, "users", user.id);
+  await updateDoc(ref, {
+    rankRoomId: null,
+  });
 };
