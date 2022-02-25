@@ -37,6 +37,7 @@ export const firebaseDataToUser = (data: DocumentData): IUser => {
     currentPracticeWord: data.currentPracticeWord,
     previousPracticeWord: data.previousPracticeWord,
     ongoingPracticeGuess: data.ongoingPracticeGuess,
+    rankRoomId: data.rankRoomId,
   };
 
   return user;

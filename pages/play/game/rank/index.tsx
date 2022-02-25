@@ -13,7 +13,7 @@ import {
   IBoardSkin,
 } from "../../../../interfaces/IBoardSkin";
 import { queryBoardSkin } from "../../../../firebase/boardSkins";
-import { queryUser } from "../../../../firebase/users";
+import { firebaseDataToUser, queryUser } from "../../../../firebase/users";
 import BoardSkinManager from "../../../../models/BoardSkinManager";
 import LoadingPopup from "../../../../components/LoadingPopup";
 import {
@@ -22,8 +22,11 @@ import {
   joinWaitRoom,
   removeRankRoomId,
 } from "../../../../firebase/waitRoom";
-import { onSnapshot, query, Unsubscribe } from "firebase/firestore";
-import { waitRoomCollection } from "../../../../firebase/clientApp";
+import { onSnapshot, query, Unsubscribe, where } from "firebase/firestore";
+import {
+  usersCollection,
+  waitRoomCollection,
+} from "../../../../firebase/clientApp";
 import { useRouter } from "next/router";
 import Close from "../../../../public/icons/close.svg";
 
@@ -36,53 +39,79 @@ const RankMatchmaking: NextPage = () => {
     useState<BoardSkinManager | null>(null);
 
   useEffect(() => {
-    let unsubscribe: Unsubscribe | undefined = undefined;
-    const fetchData = async () => {
-      const waitRoomQuery = query(waitRoomCollection);
+    const waitRoomQuery = query(waitRoomCollection);
 
-      unsubscribe = onSnapshot(waitRoomQuery, async (querySnapshot) => {
-        if (!AuthUser.id) {
+    const unsubscribe = onSnapshot(waitRoomQuery, async (querySnapshot) => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      if (querySnapshot.docs.length === 0) {
+        return [];
+      }
+
+      const data = querySnapshot.docs[0].data();
+      const ids = data.ids as string[];
+
+      const user = await queryUser(AuthUser.id);
+
+      if (user && user.rankRoomId) {
+        removeRankRoomId(user);
+        router.push(`/play/game/rank/${user.rankRoomId}`);
+      }
+
+      if (!ids || ids.length === 0) {
+        await joinWaitRoom(AuthUser.id);
+      }
+
+      let cloneIds = [...ids];
+      cloneIds = cloneIds.filter((id) => id !== AuthUser.id);
+
+      if (cloneIds.length > 0) {
+        const roomId = await createJointRoom(AuthUser.id, cloneIds);
+        if (!roomId) {
           return;
         }
 
-        if (querySnapshot.docs.length === 0) {
-          return [];
-        }
-
-        const data = querySnapshot.docs[0].data();
-        const ids = data.ids as string[];
-
-        const user = await queryUser(AuthUser.id);
-
-        if (user && user.rankRoomId) {
-          removeRankRoomId(user);
-          router.push(`/play/game/rank/${user.rankRoomId}`);
-        }
-
-        if (!ids || ids.length === 0) {
-          await joinWaitRoom(AuthUser.id);
-        }
-
-        let cloneIds = [...ids];
-        cloneIds = cloneIds.filter((id) => id !== AuthUser.id);
-
-        if (cloneIds.length > 0) {
-          const roomId = await createJointRoom(AuthUser.id, cloneIds);
-          if (!roomId) {
-            return;
-          }
-
-          router.push(`/play/game/rank/${roomId}`);
-        }
-      });
-    };
-
-    fetchData();
+        router.push(`/play/game/rank/${roomId}`);
+      }
+    });
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
+      unsubscribe();
+
+      if (!AuthUser.id) {
+        return;
       }
+
+      exitWaitRoom(AuthUser.id);
+    };
+  }, [AuthUser.id, router]);
+
+  useEffect(() => {
+    const userQuery = query(usersCollection, where("id", "==", AuthUser.id));
+
+    const unsubscribe = onSnapshot(userQuery, async (querySnapshot) => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      if (querySnapshot.docs.length === 0) {
+        return [];
+      }
+
+      const data = querySnapshot.docs[0].data();
+
+      const user = firebaseDataToUser(data);
+
+      if (user && user.rankRoomId) {
+        removeRankRoomId(user);
+        router.push(`/play/game/rank/${user.rankRoomId}`);
+      }
+    });
+
+    return () => {
+      unsubscribe();
 
       if (!AuthUser.id) {
         return;

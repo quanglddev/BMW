@@ -19,6 +19,8 @@ export const firebaseToRoomDetail = (data: DocumentData): IRoom => {
     side1LastPresence: new Date(data.side1LastPresence.seconds * 1000),
     side2LastPresence: new Date(data.side2LastPresence.seconds * 1000),
     word: data.word,
+    finishedTime: new Date(data.finishedTime.seconds * 1000),
+    winner: data.winner,
   };
 
   return room;

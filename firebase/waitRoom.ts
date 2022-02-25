@@ -40,6 +40,11 @@ export const exitWaitRoom = async (userId: string): Promise<void> => {
   await updateDoc(foundDocRef, {
     ids: arrayRemove(userId),
   });
+
+  const userRef = doc(firestore, "users", userId);
+  await updateDoc(userRef, {
+    rankRoomId: null,
+  });
 };
 
 export const createJointRoom = async (
