@@ -162,7 +162,7 @@ const Playground = (props: Props) => {
       return;
     }
 
-    if (mode !== "rank") {
+    if (mode !== "rank" && mode !== "friendly") {
       return;
     }
 
@@ -336,7 +336,7 @@ const Playground = (props: Props) => {
     e.preventDefault();
 
     // Determine if cell is clickable
-    if (mode !== "rank") {
+    if (mode !== "rank" && mode != "friendly") {
       // Too time-consuming for player
       if (cells[cellIdx].state !== 0) {
         displayError(
@@ -425,6 +425,21 @@ const Playground = (props: Props) => {
         buttonText: "New Rank Match",
         onMainButtonClick: () => {
           router.push("/play/game/rank");
+        },
+        onClose: () => {
+          router.push("/");
+        },
+      };
+      setAnnouncementConfig(config);
+    } else if (mode === "friendly") {
+      const config: IAnnouncement = {
+        userId,
+        status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
+        title: won ? "Victory" : "Defeat",
+        message: won ? "You Won!" : `The word is ${word.toUpperCase()}`,
+        buttonText: "New Friendly Match",
+        onMainButtonClick: () => {
+          router.push("/play/game/friendly");
         },
         onClose: () => {
           router.push("/");
@@ -645,25 +660,26 @@ const Playground = (props: Props) => {
       <div className="flex flex-row flex-wrap justify-center items-center w-full">
         {cells.map((cell, idx) => (
           <div className="relative" key={idx}>
-            {mode === "rank" && idx < opponentCells.length && (
-              <div
-                className={`absolute mt-3 top-0 flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
-                  showMyBoard ? "z-0" : "z-20"
-                } ${cellOuterClasses(opponentCells[idx].state)}`}
-              >
-                <input
-                  type="text"
-                  className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
-                    opponentCells[idx].state
-                  )}`}
-                  value={""}
-                  maxLength={1}
-                  onClick={(e) => onClickCell(e, mode, idx)}
-                  readOnly
-                  onKeyDown={(e) => e.preventDefault()}
-                />
-              </div>
-            )}
+            {(mode === "rank" || mode === "friendly") &&
+              idx < opponentCells.length && (
+                <div
+                  className={`absolute mt-3 top-0 flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
+                    showMyBoard ? "z-0" : "z-20"
+                  } ${cellOuterClasses(opponentCells[idx].state)}`}
+                >
+                  <input
+                    type="text"
+                    className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
+                      opponentCells[idx].state
+                    )}`}
+                    value={""}
+                    maxLength={1}
+                    onClick={(e) => onClickCell(e, mode, idx)}
+                    readOnly
+                    onKeyDown={(e) => e.preventDefault()}
+                  />
+                </div>
+              )}
             <div
               className={`relative flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
                 showMyBoard ? "z-20" : "z-0"

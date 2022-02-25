@@ -54,7 +54,7 @@ export const updateBoard = async (
     await updateDoc(userDocRef, {
       ongoingPracticeGuess: encodedBoard,
     });
-  } else if (mode === "rank" && roomDetail) {
+  } else if ((mode === "rank" || mode === "friendly") && roomDetail) {
     if (roomDetail.side1 === userId) {
       const userDocRef = doc(firestore, "rooms", roomDetail.id);
       await updateDoc(userDocRef, {

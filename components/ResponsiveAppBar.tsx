@@ -129,7 +129,10 @@ const ResponsiveAppBar = () => {
             </button>
 
             {/* Friends */}
-            <button className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
+            <button
+              className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3"
+              onClick={() => navigateTo("/play/game/friendly")}
+            >
               <Friends className="fill-current w-8 h-8"></Friends>
               <div className="text-black ml-2">Friendly match</div>
             </button>
