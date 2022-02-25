@@ -1,7 +1,11 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
-export const displayError = (message: string, title: string = "Error") => {
+export const displayError = (
+  message: string,
+  title: string = "Error",
+  onFinished?: () => void
+) => {
   const errorAlert = withReactContent(Swal);
 
   errorAlert
@@ -10,10 +14,14 @@ export const displayError = (message: string, title: string = "Error") => {
       text: message,
       icon: "error",
     })
-    .then(() => {});
+    .then(() => {
+      if (onFinished) {
+        onFinished();
+      }
+    });
 };
 
-export const displaySuccess = (message: string) => {
+export const displaySuccess = (message: string, onFinished?: () => void) => {
   const errorAlert = withReactContent(Swal);
 
   errorAlert
@@ -22,5 +30,9 @@ export const displaySuccess = (message: string) => {
       text: message,
       icon: "success",
     })
-    .then(() => {});
+    .then(() => {
+      if (onFinished) {
+        onFinished();
+      }
+    });
 };
