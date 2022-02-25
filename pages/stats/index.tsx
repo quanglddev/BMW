@@ -24,6 +24,7 @@ import { exitWaitRoom } from "../../firebase/waitRoom";
 import IUser from "../../interfaces/IUser";
 import { getAllUserIdsFromRooms, queryAllRooms } from "../../firebase/rooms";
 import { IRoom } from "../../interfaces/IRoom";
+import AppBarLarge from "../../components/AppBarLarge";
 
 const Stats: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -72,13 +73,17 @@ const Stats: NextPage = () => {
   };
 
   return (
-    <div className="relative flex w-screen h-full flex-col items-center">
-      <div className="z-50">
+    <div className="relative flex w-full h-full flex-col items-center">
+      <div className="z-50 lg:hidden">
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
 
+      <div className="z-50">
+        <AppBarLarge></AppBarLarge>
+      </div>
+
       {user && (
-        <div className="flex w-full h-full flex-col items-center z-10 mt-12 bg-pink-light-1">
+        <div className="flex w-full h-full flex-col items-center z-10 mt-12 bg-pink-light-1 lg:pl-36 lg:mt-0 max-w-3xl">
           <div className="flex flex-row w-full h-24">
             <div className="flex flex-col items-center justify-center w-1/3 bg-white h-full">
               <div className="text-3xl">{user.longestDailyStreak}</div>

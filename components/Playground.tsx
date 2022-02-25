@@ -641,7 +641,7 @@ const Playground = (props: Props) => {
   };
 
   return (
-    <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1">
+    <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 md:flex-row">
       <div className="z-40">
         {showAnnouncement && announcementConfig && (
           <GameResultPopup
@@ -657,19 +657,19 @@ const Playground = (props: Props) => {
         )}
       </div>
 
-      <div className="flex flex-row flex-wrap justify-center items-center w-full">
+      <div className="flex flex-row flex-wrap justify-center items-center w-full max-w-xs sm:max-w-sm md:w-7/12">
         {cells.map((cell, idx) => (
           <div className="relative" key={idx}>
             {(mode === "rank" || mode === "friendly") &&
               idx < opponentCells.length && (
                 <div
-                  className={`absolute mt-3 top-0 flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
+                  className={`absolute mt-3 top-0 flex justify-center items-center w-12 h-12 sm:w-14 sm:h-14 m-2 drop-shadow-md cursor-not-allowed ${
                     showMyBoard ? "z-0" : "z-20"
                   } ${cellOuterClasses(opponentCells[idx].state)}`}
                 >
                   <input
                     type="text"
-                    className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
+                    className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none cursor-not-allowed ${cellInnerClasses(
                       opponentCells[idx].state
                     )}`}
                     value={""}
@@ -681,14 +681,14 @@ const Playground = (props: Props) => {
                 </div>
               )}
             <div
-              className={`relative flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
+              className={`relative flex justify-center items-center w-12 h-12 sm:w-14 sm:h-14 m-2 drop-shadow-md cursor-not-allowed ${
                 showMyBoard ? "z-20" : "z-0"
               } ${cellOuterClasses(cell.state)}`}
             >
               <input
                 ref={(el) => (cellsRef.current[idx] = el)}
                 type="text"
-                className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
+                className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none cursor-not-allowed ${cellInnerClasses(
                   cell.state
                 )}`}
                 value={cell.value}
@@ -703,12 +703,12 @@ const Playground = (props: Props) => {
         ))}
       </div>
 
-      <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-0 right-0 left-0">
+      <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-0 right-0 left-0 md:w-5/12 md:relative">
         <div className="w-full flex justify-center mt-[5px]">
           {keyboard[0].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 w-8 rounded-md text-sm capitalize font-semibold mx-[3.5px] ${keyClasses(
+              className={`flex items-center justify-center h-16 w-8 md:h-12 md:w-6 rounded-md text-sm capitalize font-semibold mx-[3.5px] hover:bg-slate-100 ${keyClasses(
                 keyCode.value
               )}`}
               onClick={() => onKeyBoardClick(keyCode.value)}
@@ -721,7 +721,7 @@ const Playground = (props: Props) => {
           {keyboard[1].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 w-8 rounded-md text-sm capitalize font-semibold mx-[3.5px] ${keyClasses(
+              className={`flex items-center justify-center h-16 w-8 md:h-12 md:w-6 rounded-md text-sm capitalize font-semibold mx-[3.5px] hover:bg-slate-100 ${keyClasses(
                 keyCode.value
               )}`}
               onClick={() => onKeyBoardClick(keyCode.value)}
@@ -734,8 +734,8 @@ const Playground = (props: Props) => {
           {keyboard[2].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 ${
-                keyCode.isWide ? "w-12" : "w-8"
+              className={`flex items-center justify-center h-16 md:h-12 hover:bg-slate-100 ${
+                keyCode.isWide ? "w-12" : "w-8 md:w-6"
               } rounded-md ${
                 keyCode.isBigText ? "text-xl" : "text-sm"
               } capitalize font-semibold mx-[3.5px] ${keyClasses(

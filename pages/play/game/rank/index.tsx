@@ -29,6 +29,7 @@ import {
 } from "../../../../firebase/clientApp";
 import { useRouter } from "next/router";
 import Close from "../../../../public/icons/close.svg";
+import AppBarLarge from "../../../../components/AppBarLarge";
 
 const RankMatchmaking: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -198,8 +199,12 @@ const RankMatchmaking: NextPage = () => {
 
   return (
     <div className="relative flex flex-1 w-screen h-screen flex-col items-center">
-      <div className="z-50">
+      <div className="z-50 lg:hidden">
         <ResponsiveAppBar></ResponsiveAppBar>
+      </div>
+
+      <div className="z-50">
+        <AppBarLarge></AppBarLarge>
       </div>
 
       <div className="z-40">
@@ -207,7 +212,7 @@ const RankMatchmaking: NextPage = () => {
       </div>
 
       {AuthUser.id && (
-        <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 pt-12">
+        <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 pt-12 lg:pl-36">
           <div className="flex flex-row w-full h-full justify-center items-center mt-3">
             <div className="flex flex-row flex-wrap justify-center items-center w-full">
               {cells.map((cell, idx) => (

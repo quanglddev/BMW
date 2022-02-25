@@ -108,12 +108,17 @@ const SignUp: NextPage = () => {
 
   return (
     <div className="relative flex w-screen h-full flex-col items-center">
-      <div className="flex flex-row items-center -mt-1 justify-center w-full drop-shadow-lg bg-red-dark-99">
+      <div
+        className="flex flex-row items-center -mt-1 justify-center w-full drop-shadow-lg bg-red-dark-99 cursor-pointer"
+        onClick={() => router.push("/")}
+      >
         <Logo className="fill-current w-16 h-16 -ml-6"></Logo>
-        <div className="-ml-3 text-lg font-bold text-white">BMWordle</div>
+        <div className="-ml-3 text-lg font-bold text-white select-none">
+          BMWordle
+        </div>
       </div>
 
-      <div className="flex w-full h-full flex-col items-center py-8 bg-gradient-3">
+      <div className="flex w-full h-full flex-col items-center py-8 bg-gradient-3 max-w-md">
         <div className="text-black font-semibold text-3xl mx-4 text-center -mt-4">
           <span>Join Now - It&apos;s Free &#38;</span> <span>Easy!</span>
         </div>
@@ -159,7 +164,7 @@ const SignUp: NextPage = () => {
             <button
               type="submit"
               className={`flex flex-row w-11/12 h-12 bg-red-dark-99 rounded-md mt-5 items-center justify-center ${
-                formValid ? "opacity-100" : "opacity-50"
+                formValid ? "opacity-100 hover:bg-red-500" : "opacity-50"
               }`}
               onClick={(e) => onSignUp(e)}
               disabled={!formValid}

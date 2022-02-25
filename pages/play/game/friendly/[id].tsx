@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { IRoom } from "../../../../interfaces/IRoom";
 import { closeRoomIfWon, queryRoomDetail } from "../../../../firebase/rooms";
 import { exitWaitRoom } from "../../../../firebase/waitRoom";
+import AppBarLarge from "../../../../components/AppBarLarge";
 
 const FriendlyGame: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -66,12 +67,16 @@ const FriendlyGame: NextPage = () => {
 
   return (
     <div className="relative flex flex-1 w-screen h-full flex-col items-center">
-      <div className="z-50">
+      <div className="z-50 lg:hidden">
         <ResponsiveAppBar></ResponsiveAppBar>
       </div>
 
+      <div className="z-50">
+        <AppBarLarge></AppBarLarge>
+      </div>
+
       {AuthUser.id && (
-        <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 pt-12">
+        <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 pt-12 lg:pl-36">
           <Playground
             userId={AuthUser.id}
             word={word}

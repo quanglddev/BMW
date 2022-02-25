@@ -1,9 +1,4 @@
 import { useEffect, useState } from "react";
-import Close from "../public/icons/close.svg";
-import Circle from "../public/icons/circle.svg";
-import { onSnapshot, query, where } from "firebase/firestore";
-import { usersCollection } from "../firebase/clientApp";
-import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 
 const permutations = ["Searching", "Searching.", "Searching..", "Searching..."];
 
@@ -30,7 +25,7 @@ const LoadingPopup = () => {
       >
         <div className="flex w-full h-full bg-black opacity-50 absolute top-0 left-0 right-0 bottom-0 z-40"></div>
         <div className="flex justify-center items-center w-full h-full z-50">
-          <div className="flex flex-col h-36 w-10/12 bg-white drop-shadow-2xl rounded-2xl relative overflow-hidden">
+          <div className="flex flex-col h-36 w-10/12 bg-white drop-shadow-2xl rounded-2xl relative overflow-hidden max-w-md">
             <div className="w-full text-center text-lg font-medium mt-5">
               {header}
             </div>
