@@ -61,8 +61,13 @@ const RankMatchmaking: NextPage = () => {
 
         if (!ids || ids.length === 0) {
           await joinWaitRoom(AuthUser.id);
-        } else if (ids.length > 0) {
-          const roomId = await createJointRoom(AuthUser.id, ids);
+        }
+
+        let cloneIds = [...ids];
+        cloneIds = cloneIds.filter((id) => id !== AuthUser.id);
+
+        if (cloneIds.length > 0) {
+          const roomId = await createJointRoom(AuthUser.id, cloneIds);
           if (!roomId) {
             return;
           }
