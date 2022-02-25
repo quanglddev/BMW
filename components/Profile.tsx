@@ -26,7 +26,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";
-import { queryUser } from "../firebase/users";
+import { firebaseDataToUser, queryUser } from "../firebase/users";
 
 const supportedImageExtensions = ["jpeg", "png", "jpg"];
 
@@ -49,16 +49,18 @@ const Profile = () => {
   useEffect(() => {
     const allUsersQuery = query(
       usersCollection,
-      orderBy("wonGames", "desc"),
+      orderBy("longestRankStreak", "desc"),
+      orderBy("longestDailyStreak", "desc"),
+      orderBy("longestPracticeStreak", "desc"),
       orderBy("fullName")
     );
 
     getDocs(allUsersQuery).then((querySnapshot) => {
       const userIdx = querySnapshot.docs.findIndex(
-        (doc) => doc.data().id === user.id
+        (doc) => firebaseDataToUser(doc.data()).id === AuthUser.id
       );
 
-      if (!userIdx) {
+      if (userIdx < 0) {
         return;
       }
 
@@ -83,7 +85,7 @@ const Profile = () => {
         setTier("Diamond");
       }
     });
-  }, [user.id]);
+  }, [AuthUser.id]);
 
   useEffect(() => {
     const fetchData = async () => {

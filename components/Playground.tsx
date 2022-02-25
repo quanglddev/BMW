@@ -448,6 +448,27 @@ const Playground = (props: Props) => {
     }
   };
 
+  const isCellGreen = (guessedWord: string, idx: number): boolean => {
+    return guessedWord[idx].toLowerCase() === word[idx].toLowerCase();
+  };
+
+  const isCellYellow = (guessedWord: string, idx: number): boolean => {
+    let letterOccurrenceIdx: number[] = [];
+    for (let i = 0; i < word.length; i++) {
+      if (word[i].toLowerCase() === guessedWord[idx].toLowerCase()) {
+        letterOccurrenceIdx.push(i);
+      }
+    }
+
+    for (let _idx of letterOccurrenceIdx) {
+      if (guessedWord[_idx].toLowerCase() !== word[_idx].toLowerCase()) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const startRevealingSequence = async (
     lineIdx: number,
     guessedWord: string
@@ -460,9 +481,9 @@ const Playground = (props: Props) => {
       await startFirework(lineIdx * 5 + i);
 
       // Update
-      if (guessedWord[i] === word[i]) {
+      if (isCellGreen(guessedWord, i)) {
         clone[lineIdx * 5 + i].state = 3;
-      } else if (word.indexOf(guessedWord[i]) > -1) {
+      } else if (isCellYellow(guessedWord, i)) {
         clone[lineIdx * 5 + i].state = 2;
       } else {
         clone[lineIdx * 5 + i].state = 1;
