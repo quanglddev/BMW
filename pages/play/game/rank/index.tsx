@@ -22,7 +22,7 @@ import {
   joinWaitRoom,
   removeRankRoomId,
 } from "../../../../firebase/waitRoom";
-import { onSnapshot, query } from "firebase/firestore";
+import { onSnapshot, query, Unsubscribe } from "firebase/firestore";
 import { waitRoomCollection } from "../../../../firebase/clientApp";
 import { useRouter } from "next/router";
 import Close from "../../../../public/icons/close.svg";
@@ -36,10 +36,11 @@ const RankMatchmaking: NextPage = () => {
     useState<BoardSkinManager | null>(null);
 
   useEffect(() => {
+    let unsubscribe: Unsubscribe | undefined = undefined;
     const fetchData = async () => {
       const waitRoomQuery = query(waitRoomCollection);
 
-      const unsubscribe = onSnapshot(waitRoomQuery, async (querySnapshot) => {
+      unsubscribe = onSnapshot(waitRoomQuery, async (querySnapshot) => {
         if (!AuthUser.id) {
           return;
         }
@@ -69,19 +70,21 @@ const RankMatchmaking: NextPage = () => {
           router.push(`/play/game/rank/${roomId}`);
         }
       });
-
-      return async () => {
-        unsubscribe();
-
-        if (!AuthUser.id) {
-          return;
-        }
-
-        await exitWaitRoom(AuthUser.id);
-      };
     };
 
     fetchData();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+
+      if (!AuthUser.id) {
+        return;
+      }
+
+      exitWaitRoom(AuthUser.id);
+    };
   }, [AuthUser.id, router]);
 
   useEffect(() => {

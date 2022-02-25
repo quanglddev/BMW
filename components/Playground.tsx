@@ -27,6 +27,7 @@ import {
   playerDisconnected,
   getEncodedBoard,
   updatePresenceOnRoom,
+  firebaseToRoomDetail,
 } from "../firebase/rooms";
 
 // Create your forceUpdate hook
@@ -170,7 +171,9 @@ const Playground = (props: Props) => {
           return;
         }
 
-        const newRoomDetails = querySnapshot.docs[0].data() as IRoom;
+        const newRoomDetails = firebaseToRoomDetail(
+          querySnapshot.docs[0].data()
+        );
 
         // There's a winner
         if (

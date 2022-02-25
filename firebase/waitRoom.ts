@@ -8,6 +8,7 @@ import {
   query,
   updateDoc,
   setDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { puzzleWords } from "../utils/puzzleWords";
 import { IRoom } from "../interfaces/IRoom";
@@ -45,42 +46,29 @@ export const createJointRoom = async (
   userId: string,
   ids: string[]
 ): Promise<string> => {
-  const myselfIdx = ids.findIndex((id) => id === userId);
-
-  if (!myselfIdx) {
-    return "";
-  }
-
   const availables = [...ids];
-  availables.splice(myselfIdx, 1);
 
   const chosenOpponentId =
     availables[Math.floor(Math.random() * availables.length)];
 
-  // Remove opponent immediately
-  const foundDocRef = doc(firestore, "waitRoom", "1234567890");
-  await updateDoc(foundDocRef, {
-    ids: arrayRemove(chosenOpponentId),
-  });
-  await updateDoc(foundDocRef, {
-    ids: arrayRemove(userId),
-  });
-
   // Create a room now
   const roomId = uuidv4();
   const foundRef = doc(firestore, "rooms", roomId);
-  const newRoom: IRoom = {
-    id: roomId,
-    side1: userId,
-    side2: chosenOpponentId,
-    side1Board: "",
-    side2Board: "",
-    word: puzzleWords[Math.floor(Math.random() * puzzleWords.length)],
-    side1LastPresence: new Date(),
-    side2LastPresence: new Date(),
-  };
 
-  await setDoc(foundRef, newRoom, { merge: true });
+  await setDoc(
+    foundRef,
+    {
+      id: roomId,
+      side1: userId,
+      side2: chosenOpponentId,
+      side1Board: "",
+      side2Board: "",
+      word: puzzleWords[Math.floor(Math.random() * puzzleWords.length)],
+      side1LastPresence: Timestamp.fromDate(new Date()),
+      side2LastPresence: Timestamp.fromDate(new Date()),
+    },
+    { merge: true }
+  );
 
   // Let the other know
   const opponentRef = doc(firestore, "users", chosenOpponentId);
@@ -88,7 +76,7 @@ export const createJointRoom = async (
     rankRoomId: roomId,
   });
 
-  return newRoom.id;
+  return roomId;
 };
 
 export const removeRankRoomId = async (user: IUser) => {

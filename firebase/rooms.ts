@@ -1,6 +1,28 @@
-import { doc, getDocs, query, Timestamp, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  DocumentData,
+  getDocs,
+  query,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { IRoom } from "../interfaces/IRoom";
 import { firestore, roomsCollection } from "./clientApp";
+
+export const firebaseToRoomDetail = (data: DocumentData): IRoom => {
+  const room: IRoom = {
+    id: data.id,
+    side1: data.side1,
+    side2: data.side2,
+    side1Board: data.side1Board,
+    side2Board: data.side2Board,
+    side1LastPresence: new Date(data.side1LastPresence.seconds * 1000),
+    side2LastPresence: new Date(data.side2LastPresence.seconds * 1000),
+    word: data.word,
+  };
+
+  return room;
+};
 
 export const queryRoomDetail = async (roomId: string) => {
   const roomQuery = query(roomsCollection);
