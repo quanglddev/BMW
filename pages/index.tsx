@@ -16,6 +16,7 @@ import {
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
 import { initializeUserInfo } from "../firebase/users";
+import { exitWaitRoom } from "../firebase/waitRoom";
 
 const Home: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -28,6 +29,7 @@ const Home: NextPage = () => {
     }
 
     initializeUserInfo(AuthUser);
+    exitWaitRoom(AuthUser.id);
   }, [AuthUser]);
 
   useEffect(() => {

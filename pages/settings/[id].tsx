@@ -10,14 +10,28 @@ import BoardSelection from "../../components/BoardSelection";
 import FriendSettings from "../../components/FriendSettings";
 import {
   AuthAction,
+  useAuthUser,
   withAuthUser,
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
+import { useEffect } from "react";
+import { initializeUserInfo } from "../../firebase/users";
+import { exitWaitRoom } from "../../firebase/waitRoom";
 
 const Settings: NextPage = () => {
+  const AuthUser = useAuthUser();
   const router = useRouter();
   const { id } = router.query;
   const option = parseInt(id as string, 10);
+
+  useEffect(() => {
+    if (!AuthUser.id) {
+      return;
+    }
+
+    initializeUserInfo(AuthUser);
+    exitWaitRoom(AuthUser.id);
+  }, [AuthUser]);
 
   return (
     <div className="relative flex w-screen h-full flex-col items-center">

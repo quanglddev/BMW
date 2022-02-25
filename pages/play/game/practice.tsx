@@ -11,6 +11,7 @@ import Playground from "../../../components/Playground";
 import { updatePracticeStreak } from "../../../firebase/streaks";
 import { initializeUserInfo } from "../../../firebase/users";
 import { generateNewPracticeWordIfEmpty } from "../../../firebase/board";
+import { exitWaitRoom } from "../../../firebase/waitRoom";
 
 const PracticeGame: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -22,6 +23,7 @@ const PracticeGame: NextPage = () => {
     }
 
     initializeUserInfo(AuthUser);
+    exitWaitRoom(AuthUser.id);
   }, [AuthUser]);
 
   useEffect(() => {

@@ -35,7 +35,7 @@ const LoadingPopup = () => {
               {header}
             </div>
             <div className="w-full text-center text-md font-medium mt-1">
-              10 min
+              Estimated: 1 min
             </div>
             <div className="w-full text-sm text-center text-gray-700 mt-3">
               Having fun? Invite a friend to join

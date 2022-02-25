@@ -20,11 +20,11 @@ import {
   createJointRoom,
   exitWaitRoom,
   joinWaitRoom,
-  queryWaitRoom,
 } from "../../../../firebase/waitRoom";
-import { getDocs, onSnapshot, query } from "firebase/firestore";
+import { onSnapshot, query } from "firebase/firestore";
 import { waitRoomCollection } from "../../../../firebase/clientApp";
 import { useRouter } from "next/router";
+import Close from "../../../../public/icons/close.svg";
 
 const RankMatchmaking: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -107,6 +107,11 @@ const RankMatchmaking: NextPage = () => {
     fetchData();
   }, [AuthUser.id]);
 
+  const onCancelMatchmaking = async (userId: string) => {
+    await exitWaitRoom(userId);
+    router.push("/");
+  };
+
   const cellOuterClasses = (state: number): string => {
     if (!boardSkinManager) {
       return "";
@@ -181,6 +186,17 @@ const RankMatchmaking: NextPage = () => {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {AuthUser.id && (
+        <div className="flex items-center justify-center w-full h-12 bg-white z-50">
+          <button
+            className="w-8 h-8"
+            onClick={() => onCancelMatchmaking(AuthUser.id!)}
+          >
+            <Close className="fill-current w-full h-full text-red-dark-99"></Close>
+          </button>
         </div>
       )}
     </div>

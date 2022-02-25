@@ -17,6 +17,7 @@ import { initializeUserInfo, queryUser } from "../../../firebase/users";
 import Playground from "../../../components/Playground";
 import { AnnouncementStatus } from "../../../interfaces/IAnnouncement";
 import { updateDailyStreak } from "../../../firebase/streaks";
+import { exitWaitRoom } from "../../../firebase/waitRoom";
 
 const DailyGame: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -30,6 +31,7 @@ const DailyGame: NextPage = () => {
     }
 
     initializeUserInfo(AuthUser);
+    exitWaitRoom(AuthUser.id);
   }, [AuthUser]);
 
   useEffect(() => {
