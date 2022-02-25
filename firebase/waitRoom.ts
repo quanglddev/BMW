@@ -53,8 +53,7 @@ export const createJointRoom = async (
 ): Promise<string> => {
   const availables = [...ids];
 
-  const chosenOpponentId =
-    availables[Math.floor(Math.random() * availables.length)];
+  const chosenOpponentId = availables[availables.length - 1];
 
   // Create a room now
   const roomId = uuidv4();

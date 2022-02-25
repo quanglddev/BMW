@@ -5,6 +5,7 @@ import {
   query,
   Timestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { IRoom } from "../interfaces/IRoom";
 import { firestore, roomsCollection } from "./clientApp";
@@ -19,7 +20,8 @@ export const firebaseToRoomDetail = (data: DocumentData): IRoom => {
     side1LastPresence: new Date(data.side1LastPresence.seconds * 1000),
     side2LastPresence: new Date(data.side2LastPresence.seconds * 1000),
     word: data.word,
-    finishedTime: new Date(data.finishedTime.seconds * 1000),
+    finishedTime:
+      data.finishedTime && new Date(data.finishedTime.seconds * 1000),
     winner: data.winner,
   };
 
@@ -27,7 +29,7 @@ export const firebaseToRoomDetail = (data: DocumentData): IRoom => {
 };
 
 export const queryRoomDetail = async (roomId: string) => {
-  const roomQuery = query(roomsCollection);
+  const roomQuery = query(roomsCollection, where("id", "==", roomId));
 
   const querySnapshot = await getDocs(roomQuery);
   if (querySnapshot.docs.length === 0) {
@@ -35,7 +37,7 @@ export const queryRoomDetail = async (roomId: string) => {
   }
 
   const data = querySnapshot.docs[0].data();
-  const room = data as IRoom;
+  const room = firebaseToRoomDetail(data);
 
   return room;
 };

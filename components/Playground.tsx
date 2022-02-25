@@ -191,8 +191,8 @@ const Playground = (props: Props) => {
               : AnnouncementStatus.failure,
             title: winning ? "Victory" : "Defeat",
             message: winning
-              ? "Win by time!"
-              : `Lose by time. The word is ${word.toUpperCase()}`,
+              ? "Win by timeout!"
+              : `Lose by timeout. (${word.toUpperCase()})`,
             buttonText: "New Rank Match",
             onMainButtonClick: () => {
               router.push("/play/game/rank");
