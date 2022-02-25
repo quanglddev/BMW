@@ -64,8 +64,8 @@ const RankGame: NextPage = () => {
     if (!roomDetail) {
       return;
     }
-    updateRankStreak(userId, won, roomDetail);
-    closeRoomIfWon(userId, won, roomDetail);
+    await updateRankStreak(userId, won, roomDetail);
+    await closeRoomIfWon(userId, won, roomDetail);
   };
 
   return (

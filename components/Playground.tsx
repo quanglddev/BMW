@@ -173,7 +173,11 @@ const Playground = (props: Props) => {
         const newRoomDetails = querySnapshot.docs[0].data() as IRoom;
 
         // There's a winner
-        if (newRoomDetails.finishedTime && newRoomDetails.winner) {
+        if (
+          newRoomDetails.finishedTime &&
+          newRoomDetails.winner &&
+          !announcementConfig
+        ) {
           // Determine winner loser
           const winning = newRoomDetails.winner === userId;
           onFinished(userId, winning, newRoomDetails);
@@ -209,7 +213,7 @@ const Playground = (props: Props) => {
 
         // There's a disconnection
         const disconnected = await playerDisconnected(userId, newRoomDetails);
-        if (disconnected) {
+        if (disconnected && !announcementConfig) {
           const winning = userId !== disconnected;
           onFinished(userId, winning, newRoomDetails);
           const config: IAnnouncement = {
@@ -238,12 +242,24 @@ const Playground = (props: Props) => {
     return () => {
       unsubscribe();
     };
-  }, [userId, mode, boardSkin, roomId, onFinished, router, word]);
+  }, [
+    userId,
+    mode,
+    boardSkin,
+    roomId,
+    onFinished,
+    router,
+    word,
+    announcementConfig,
+  ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (!roomId) {
         return;
+      }
+      if (finished) {
+        clearInterval(interval);
       }
       updatePresenceOnRoom(userId, roomId);
     }, 30000);
@@ -251,7 +267,7 @@ const Playground = (props: Props) => {
     return () => {
       clearInterval(interval);
     };
-  }, [userId, roomId]);
+  }, [userId, roomId, finished]);
 
   useEffect(() => {
     const fetchData = async () => {
