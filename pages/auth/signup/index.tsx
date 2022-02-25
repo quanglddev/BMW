@@ -1,6 +1,11 @@
 import { useState, MouseEvent } from "react";
 import type { NextPage } from "next";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { withAuthUser, AuthAction } from "next-firebase-auth";
@@ -56,6 +61,44 @@ const SignUp: NextPage = () => {
         const errorCode = error.code;
         onFirebaseError(errorCode);
         const errorMessage = error.message;
+      });
+  };
+
+  const onSignInWithGoogle = (
+    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    provider.addScope("https://www.googleapis.com/auth/user.emails.read");
+    provider.addScope("https://www.googleapis.com/auth/user.phonenumbers.read");
+    provider.addScope("https://www.googleapis.com/auth/userinfo.email");
+    provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
+
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+
+        if (!credential) {
+          return;
+        }
+
+        const token = credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+        // ...
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        // ...
       });
   };
 
@@ -131,17 +174,24 @@ const SignUp: NextPage = () => {
             </div>
 
             <div className="flex flex-row items-center">
-              <div className="flex flex-row items-center">
+              {/* <div className="flex flex-row items-center">
                 <Facebook className="fill-current w-6 h-6"></Facebook>
                 <div className="ml-2 text-facebook text-sm font-bold">
                   Facebook
                 </div>
-              </div>
+              </div> */}
 
-              <div className="flex flex-row items-center ml-8">
-                <Google className="fill-current w-6 h-6"></Google>
-                <div className="ml-2 text-google text-sm font-bold">Google</div>
-              </div>
+              <button
+                className="flex flex-row items-center"
+                onClick={(e) => onSignInWithGoogle(e)}
+              >
+                <div className="flex flex-row items-center">
+                  <Google className="fill-current w-6 h-6"></Google>
+                  <div className="ml-2 text-google text-sm font-bold">
+                    Google
+                  </div>
+                </div>
+              </button>
             </div>
           </form>
         </div>
