@@ -1,4 +1,6 @@
+import { async } from "@firebase/util";
 import { doc, Timestamp, updateDoc } from "firebase/firestore";
+import { IRoom } from "../interfaces/IRoom";
 import { EmptyStreaks, IStreaks } from "../interfaces/IStreaks";
 import { firestore } from "./clientApp";
 import { queryDailyWord } from "./daily";
@@ -61,6 +63,28 @@ export const updatePracticeStreak = async (
     longestPracticeStreak: Math.max(
       user.longestPracticeStreak,
       won ? user.currentPracticeStreak + 1 : 0
+    ),
+  });
+};
+
+export const updateRankStreak = async (
+  userId: string,
+  won: boolean,
+  roomDetail: IRoom
+) => {
+  const user = await queryUser(userId);
+
+  if (!user) {
+    return;
+  }
+
+  // Add streak
+  const foundDocRef = doc(firestore, "users", userId);
+  await updateDoc(foundDocRef, {
+    currentRankStreak: won ? user.currentRankStreak + 1 : 0,
+    longestRankStreak: Math.max(
+      user.longestRankStreak,
+      won ? user.longestRankStreak + 1 : 0
     ),
   });
 };

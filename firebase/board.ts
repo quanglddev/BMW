@@ -1,5 +1,6 @@
 import { doc, Timestamp, updateDoc } from "firebase/firestore";
 import { IBoardCell } from "../interfaces/IBoardSkin";
+import { IRoom } from "../interfaces/IRoom";
 import { puzzleWords } from "../utils/puzzleWords";
 import { firestore } from "./clientApp";
 import { queryDailyWord } from "./daily";
@@ -36,7 +37,8 @@ export const cellsToString = (cells: IBoardCell[]) => {
 export const updateBoard = async (
   mode: string,
   cells: IBoardCell[],
-  userId: string
+  userId: string,
+  roomDetail?: IRoom
 ) => {
   const userDocRef = doc(firestore, "users", userId);
 
@@ -52,6 +54,18 @@ export const updateBoard = async (
     await updateDoc(userDocRef, {
       ongoingPracticeGuess: encodedBoard,
     });
+  } else if (mode === "rank" && roomDetail) {
+    if (roomDetail.side1 === userId) {
+      const userDocRef = doc(firestore, "rooms", roomDetail.id);
+      await updateDoc(userDocRef, {
+        side1Board: encodedBoard,
+      });
+    } else if (roomDetail.side2 === userId) {
+      const userDocRef = doc(firestore, "rooms", roomDetail.id);
+      await updateDoc(userDocRef, {
+        side2Board: encodedBoard,
+      });
+    }
   }
 };
 

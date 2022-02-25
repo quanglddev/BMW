@@ -112,7 +112,10 @@ const Home: NextPage = () => {
         </button>
 
         {/* Wifi */}
-        <button className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl">
+        <button
+          className="flex flex-row w-10/12 h-24 bg-pink-light-1 rounded-xl mt-5 items-center border-b-4 border-gray-500 drop-shadow-2xl"
+          onClick={() => router.push("/play/game/rank")}
+        >
           <Wifi className="fill-current w-16 h-16 ml-3"></Wifi>
           <div className="flex flex-col ml-3">
             <div className="font-bold text-gray-700 text-xl text-left">

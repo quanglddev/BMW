@@ -15,13 +15,19 @@ import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 import Fireworks from "fireworks/lib/react";
 import { useRouter } from "next/router";
 import { onSnapshot, query, where } from "firebase/firestore";
-import { usersCollection } from "../firebase/clientApp";
+import { roomsCollection, usersCollection } from "../firebase/clientApp";
 import {
   stringToCells,
   updateBoard,
   wipeBoardIfNewDay,
   wipeBoardIfNewPracticeWord as wipeBoardIfNewPracticeWordAndFinished,
 } from "../firebase/board";
+import { IRoom } from "../interfaces/IRoom";
+import {
+  playerDisconnected,
+  getEncodedBoard,
+  updatePresenceOnRoom,
+} from "../firebase/rooms";
 
 // Create your forceUpdate hook
 const useForceUpdate = () => {
@@ -33,9 +39,10 @@ interface Props {
   userId: string;
   word: string;
   mode: string;
+  roomId?: string;
   defaultShowAnnouncement?: boolean;
   defaultAnnouncementConfig?: IAnnouncement;
-  onFinished: (userId: string, won: boolean) => void;
+  onFinished: (userId: string, won: boolean, roomDetail?: IRoom) => void;
 }
 
 const Playground = (props: Props) => {
@@ -43,6 +50,7 @@ const Playground = (props: Props) => {
     userId,
     word,
     mode,
+    roomId,
     defaultShowAnnouncement,
     defaultAnnouncementConfig,
     onFinished,
@@ -58,6 +66,7 @@ const Playground = (props: Props) => {
   const [fireworkY, setFireworkY] = useState<number>(0);
   const [runFirework, setRunFirework] = useState<boolean>(false);
   const [finished, setFinished] = useState<boolean>(false);
+  const [roomDetail, setRoomDetail] = useState<IRoom | undefined>();
 
   const [showAnnouncement, setShowAnnouncement] = useState<boolean>(false);
   const [announcementConfig, setAnnouncementConfig] =
@@ -110,7 +119,7 @@ const Playground = (props: Props) => {
 
     const userQuery = query(usersCollection, where("id", "==", userId));
 
-    const unsubscribeStats = onSnapshot(
+    const unsubscribe = onSnapshot(
       userQuery,
       { includeMetadataChanges: true },
       (querySnapshot) => {
@@ -130,13 +139,119 @@ const Playground = (props: Props) => {
     );
 
     return () => {
-      unsubscribeStats();
+      unsubscribe();
     };
   }, [userId, mode, boardSkin]);
 
   useEffect(() => {
+    if (mode !== "practice") {
+      return;
+    }
+
     wipeBoardIfNewPracticeWordAndFinished(mode, userId);
   }, [mode, userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    if (mode !== "rank") {
+      return;
+    }
+
+    const roomQuery = query(roomsCollection, where("id", "==", roomId));
+
+    const unsubscribe = onSnapshot(
+      roomQuery,
+      { includeMetadataChanges: true },
+      async (querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
+
+        const newRoomDetails = querySnapshot.docs[0].data() as IRoom;
+
+        // There's a winner
+        if (newRoomDetails.finishedTime && newRoomDetails.winner) {
+          // Determine winner loser
+          const winning = newRoomDetails.winner === userId;
+          onFinished(userId, winning, newRoomDetails);
+          const config: IAnnouncement = {
+            userId,
+            status: winning
+              ? AnnouncementStatus.success
+              : AnnouncementStatus.failure,
+            title: winning ? "Victory" : "Defeat",
+            message: winning
+              ? "Win by time!"
+              : `Lose by time. The word is ${word.toUpperCase()}`,
+            buttonText: "New Rank Match",
+            onMainButtonClick: () => {
+              router.push("/play/game/rank");
+            },
+            onClose: () => {
+              router.push("/");
+            },
+          };
+          setAnnouncementConfig(config);
+          setFinished(true);
+        }
+
+        setRoomDetail(newRoomDetails);
+
+        const encodedBoard = getEncodedBoard(userId, newRoomDetails);
+        const newCells: IBoardCell[] = stringToCells(encodedBoard);
+
+        setCells(newCells);
+        wipeBoardIfNewDay(mode, newCells, userId);
+        setBoardSkinManager(new BoardSkinManager(newCells, boardSkin));
+
+        // There's a disconnection
+        const disconnected = await playerDisconnected(userId, newRoomDetails);
+        if (disconnected) {
+          const winning = userId !== disconnected;
+          onFinished(userId, winning, newRoomDetails);
+          const config: IAnnouncement = {
+            userId,
+            status: winning
+              ? AnnouncementStatus.success
+              : AnnouncementStatus.failure,
+            title: winning ? "Victory" : "Defeat",
+            message: winning
+              ? "Win by disconnect"
+              : `Lose by disconnect. The word is ${word.toUpperCase()}`,
+            buttonText: "New Rank Match",
+            onMainButtonClick: () => {
+              router.push("/play/game/rank");
+            },
+            onClose: () => {
+              router.push("/");
+            },
+          };
+          setAnnouncementConfig(config);
+          setFinished(true);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [userId, mode, boardSkin, roomId, onFinished, router, word]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!roomId) {
+        return;
+      }
+      updatePresenceOnRoom(userId, roomId);
+    }, 30000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [userId, roomId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -172,7 +287,7 @@ const Playground = (props: Props) => {
   const updateCellValue = (cellIdx: number, value: string) => {
     const clone = JSON.parse(JSON.stringify(cells)) as IBoardCell[];
     clone[cellIdx].value = value;
-    updateBoard(mode, clone, userId);
+    updateBoard(mode, clone, userId, roomDetail);
   };
 
   const onClickCell = (cellIdx: number) => {
@@ -213,7 +328,7 @@ const Playground = (props: Props) => {
         value: "",
         state: 0,
       }));
-    updateBoard(mode, defaultData, userId);
+    updateBoard(mode, defaultData, userId, roomDetail);
     setAnnouncementConfig(null);
     setShowAnnouncement(false);
     setFinished(false);
@@ -252,6 +367,21 @@ const Playground = (props: Props) => {
       };
 
       setAnnouncementConfig(config);
+    } else if (mode === "rank") {
+      const config: IAnnouncement = {
+        userId,
+        status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
+        title: won ? "Victory" : "Defeat",
+        message: won ? "You Won!" : `The word is ${word.toUpperCase()}`,
+        buttonText: "New Rank Match",
+        onMainButtonClick: () => {
+          router.push("/play/game/rank");
+        },
+        onClose: () => {
+          router.push("/");
+        },
+      };
+      setAnnouncementConfig(config);
     }
   };
 
@@ -259,11 +389,11 @@ const Playground = (props: Props) => {
     let filledLineIdx = getLatestNotCommittedLineIdx();
 
     if (guessedWord === word) {
-      onFinished(userId, true);
+      onFinished(userId, true, roomDetail);
       displayAnnouncement(true);
       setFinished(true);
     } else if (filledLineIdx === 5) {
-      onFinished(userId, false);
+      onFinished(userId, false, roomDetail);
       displayAnnouncement(false);
       setFinished(true);
     }
@@ -288,7 +418,7 @@ const Playground = (props: Props) => {
       } else {
         clone[lineIdx * 5 + i].state = 1;
       }
-      updateBoard(mode, clone, userId);
+      updateBoard(mode, clone, userId, roomDetail);
       forceUpdate();
     }
     forceUpdate();

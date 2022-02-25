@@ -1,27 +1,14 @@
-import { useEffect, useState, MouseEvent } from "react";
+import { useState, MouseEvent } from "react";
 import type { NextPage } from "next";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { withAuthUser, AuthAction } from "next-firebase-auth";
-
-import Image from "next/image";
-import { firestore, usersCollection } from "../../../firebase/clientApp";
-import {
-  collection,
-  QueryDocumentSnapshot,
-  DocumentData,
-  query,
-  where,
-  limit,
-  getDocs,
-  onSnapshot,
-} from "@firebase/firestore";
 import Censored from "../../../public/icons/censored.svg";
 import Uncensored from "../../../public/icons/uncensored.svg";
 import Facebook from "../../../public/icons/facebook.svg";
 import Google from "../../../public/icons/google.svg";
-import ResponsiveAppBar from "../../../components/ResponsiveAppBar";
+import Logo from "../../../public/icons/logo.svg";
 import { useRouter } from "next/router";
 
 const SignUp: NextPage = () => {
@@ -78,11 +65,12 @@ const SignUp: NextPage = () => {
 
   return (
     <div className="relative flex w-screen h-full flex-col items-center">
-      <div className="z-50">
-        <ResponsiveAppBar></ResponsiveAppBar>
+      <div className="flex flex-row items-center -mt-1 justify-center w-full drop-shadow-lg bg-red-dark-99">
+        <Logo className="fill-current w-16 h-16 -ml-6"></Logo>
+        <div className="-ml-3 text-lg font-bold text-white">BMWordle</div>
       </div>
 
-      <div className="flex w-full h-full flex-col items-center z-10 mt-12">
+      <div className="flex w-full h-full flex-col items-center py-8 bg-gradient-3">
         <div className="text-black font-semibold text-3xl mx-4 text-center -mt-4">
           <span>Join Now - It&apos;s Free &#38;</span> <span>Easy!</span>
         </div>
