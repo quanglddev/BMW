@@ -633,7 +633,7 @@ const Playground = (props: Props) => {
                   className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
                     opponentCells[idx].state
                   )}`}
-                  value={opponentCells[idx].value}
+                  value={""}
                   maxLength={1}
                   onClick={(e) => onClickCell(e, mode, idx)}
                   readOnly
