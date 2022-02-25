@@ -624,7 +624,7 @@ const Playground = (props: Props) => {
           <div className="relative" key={idx}>
             {mode === "rank" && idx < opponentCells.length && (
               <div
-                className={`absolute mt-4 ml-4 top-0 flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
+                className={`absolute mt-3 top-0 flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
                   showMyBoard ? "z-0" : "z-20"
                 } ${cellOuterClasses(opponentCells[idx].state)}`}
               >
