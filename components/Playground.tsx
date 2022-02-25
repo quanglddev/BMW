@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, MouseEvent } from "react";
 import {
   EmptyBoardSkin,
   IBoardCell,
@@ -28,6 +28,7 @@ import {
   getEncodedBoard,
   updatePresenceOnRoom,
   firebaseToRoomDetail,
+  getOpponentEncodedBoard,
 } from "../firebase/rooms";
 
 // Create your forceUpdate hook
@@ -60,14 +61,18 @@ const Playground = (props: Props) => {
   const forceUpdate = useForceUpdate();
   const cellsRef = useRef<(HTMLInputElement | null)[]>([]);
   const [cells, setCells] = useState<IBoardCell[]>([]);
+  const [opponentCells, setOpponentCells] = useState<IBoardCell[]>([]);
   const [boardSkin, setBoardSkin] = useState<IBoardSkin>(EmptyBoardSkin);
   const [boardSkinManager, setBoardSkinManager] =
+    useState<BoardSkinManager | null>(null);
+  const [opponentBoardSkinManager, setOpponentBoardSkinManager] =
     useState<BoardSkinManager | null>(null);
   const [fireworkX, setFireworkX] = useState<number>(0);
   const [fireworkY, setFireworkY] = useState<number>(0);
   const [runFirework, setRunFirework] = useState<boolean>(false);
   const [finished, setFinished] = useState<boolean>(false);
   const [roomDetail, setRoomDetail] = useState<IRoom | undefined>();
+  const [showMyBoard, setShowMyBoard] = useState<boolean>(true);
 
   const [showAnnouncement, setShowAnnouncement] = useState<boolean>(false);
   const [announcementConfig, setAnnouncementConfig] =
@@ -208,11 +213,21 @@ const Playground = (props: Props) => {
         setRoomDetail(newRoomDetails);
 
         const encodedBoard = getEncodedBoard(userId, newRoomDetails);
+        const opponentEncodedBoard = getOpponentEncodedBoard(
+          userId,
+          newRoomDetails
+        );
         const newCells: IBoardCell[] = stringToCells(encodedBoard);
+        const newOpponentCells: IBoardCell[] =
+          stringToCells(opponentEncodedBoard);
 
         setCells(newCells);
+        setOpponentCells(newOpponentCells);
         wipeBoardIfNewDay(mode, newCells, userId);
         setBoardSkinManager(new BoardSkinManager(newCells, boardSkin));
+        setOpponentBoardSkinManager(
+          new BoardSkinManager(newOpponentCells, boardSkin)
+        );
 
         // There's a disconnection
         const disconnected = await playerDisconnected(userId, newRoomDetails);
@@ -296,6 +311,10 @@ const Playground = (props: Props) => {
   }, [cells, boardSkin]);
 
   useEffect(() => {
+    setOpponentBoardSkinManager(new BoardSkinManager(opponentCells, boardSkin));
+  }, [opponentCells, boardSkin]);
+
+  useEffect(() => {
     if (!announcementConfig) {
       setShowAnnouncement(false);
       return;
@@ -309,13 +328,25 @@ const Playground = (props: Props) => {
     updateBoard(mode, clone, userId, roomDetail);
   };
 
-  const onClickCell = (cellIdx: number) => {
+  const onClickCell = (
+    e: MouseEvent<HTMLInputElement, globalThis.MouseEvent>,
+    mode: string,
+    cellIdx: number,
+    myBoard: boolean
+  ) => {
+    e.preventDefault();
+
     // Determine if cell is clickable
-    if (cells[cellIdx].state !== 0) {
-      displayError(
-        "You can't go back and change the beginning, but you can start where you are and change the ending."
-      );
-      return;
+    if (mode !== "rank") {
+      // Too time-consuming for player
+      if (cells[cellIdx].state !== 0) {
+        displayError(
+          "You can't go back and change the beginning, but you can start where you are and change the ending."
+        );
+        return;
+      }
+    } else {
+      setShowMyBoard(myBoard);
     }
   };
 
@@ -588,27 +619,48 @@ const Playground = (props: Props) => {
           ></GameResultPopup>
         )}
       </div>
+
       <div className="flex flex-row flex-wrap justify-center items-center w-full">
         {cells.map((cell, idx) => (
-          <div
-            key={idx}
-            className={`flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${cellOuterClasses(
-              cell.state
-            )}`}
-          >
-            <input
-              ref={(el) => (cellsRef.current[idx] = el)}
-              type="text"
-              className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
-                cell.state
-              )}`}
-              value={cell.value}
-              maxLength={1}
-              onChange={(e) => updateCellValue(idx, e.target.value)}
-              onClick={(e) => onClickCell(idx)}
-              readOnly
-              onKeyDown={(e) => e.preventDefault()}
-            />
+          <div className="relative" key={idx}>
+            {mode === "rank" && idx < opponentCells.length && (
+              <div
+                className={`absolute mt-4 ml-4 top-0 flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
+                  showMyBoard ? "z-0" : "z-20"
+                } ${cellOuterClasses(opponentCells[idx].state)}`}
+              >
+                <input
+                  type="text"
+                  className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
+                    opponentCells[idx].state
+                  )}`}
+                  value={opponentCells[idx].value}
+                  maxLength={1}
+                  onClick={(e) => onClickCell(e, mode, idx, false)}
+                  readOnly
+                  onKeyDown={(e) => e.preventDefault()}
+                />
+              </div>
+            )}
+            <div
+              className={`relative flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${
+                showMyBoard ? "z-20" : "z-0"
+              } ${cellOuterClasses(cell.state)}`}
+            >
+              <input
+                ref={(el) => (cellsRef.current[idx] = el)}
+                type="text"
+                className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
+                  cell.state
+                )}`}
+                value={cell.value}
+                maxLength={1}
+                onChange={(e) => updateCellValue(idx, e.target.value)}
+                onClick={(e) => onClickCell(e, mode, idx, true)}
+                readOnly
+                onKeyDown={(e) => e.preventDefault()}
+              />
+            </div>
           </div>
         ))}
       </div>

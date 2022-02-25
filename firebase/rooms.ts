@@ -51,6 +51,15 @@ export const getEncodedBoard = (userId: string, roomDetail: IRoom) => {
   return "";
 };
 
+export const getOpponentEncodedBoard = (userId: string, roomDetail: IRoom) => {
+  if (roomDetail.side1 === userId) {
+    return roomDetail.side2Board;
+  } else if (roomDetail.side2 === userId) {
+    return roomDetail.side1Board;
+  }
+  return "";
+};
+
 export const closeRoomIfWon = async (
   userId: string,
   won: boolean,
