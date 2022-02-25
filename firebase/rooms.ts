@@ -2,6 +2,7 @@ import {
   doc,
   DocumentData,
   getDocs,
+  orderBy,
   query,
   Timestamp,
   updateDoc,
@@ -26,6 +27,42 @@ export const firebaseToRoomDetail = (data: DocumentData): IRoom => {
   };
 
   return room;
+};
+
+export const getAllUserIdsFromRooms = (rooms: IRoom[]): string[] => {
+  const result: string[] = [];
+
+  rooms.forEach((room) => {
+    result.push(room.side1);
+    result.push(room.side2);
+  });
+
+  const unique = Array.from(new Set(result));
+  return unique;
+};
+
+export const queryAllRooms = async (userId: string): Promise<IRoom[]> => {
+  const result: IRoom[] = [];
+  const roomQuery = query(
+    roomsCollection,
+    where("side1", "==", userId),
+    orderBy("finishedTime", "desc")
+  );
+  const querySnapshot = await getDocs(roomQuery);
+  querySnapshot.forEach((snapshot) => {
+    result.push(firebaseToRoomDetail(snapshot.data()));
+  });
+
+  const room2Query = query(
+    roomsCollection,
+    where("side2", "==", userId),
+    orderBy("finishedTime", "desc")
+  );
+  const querySnapshot2 = await getDocs(room2Query);
+  querySnapshot2.forEach((snapshot) => {
+    result.push(firebaseToRoomDetail(snapshot.data()));
+  });
+  return result;
 };
 
 export const queryRoomDetail = async (roomId: string) => {

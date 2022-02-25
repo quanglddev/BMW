@@ -1,0 +1,10 @@
+<svg viewBox="0 0 30 30">
+    <path fill="#bae0bd" d="M11.5 15.5H18.5V27.5H11.5z" />
+    <path fill="#5e9c76" d="M18,16v11h-6V16H18 M19,15h-8v13h8V15L19,15z" />
+    <path fill="#bae0bd" d="M20.5 2.5H27.5V27.5H20.5z" />
+    <path fill="#5e9c76" d="M27,3v24h-6V3H27 M28,2h-8v26h8V2L28,2z" />
+    <g>
+        <path fill="#bae0bd" d="M2.5 8.5H9.5V27.5H2.5z" />
+        <path fill="#5e9c76" d="M9,9v18H3V9H9 M10,8H2v20h8V8L10,8z" />
+    </g>
+</svg>
