@@ -331,8 +331,7 @@ const Playground = (props: Props) => {
   const onClickCell = (
     e: MouseEvent<HTMLInputElement, globalThis.MouseEvent>,
     mode: string,
-    cellIdx: number,
-    myBoard: boolean
+    cellIdx: number
   ) => {
     e.preventDefault();
 
@@ -346,7 +345,7 @@ const Playground = (props: Props) => {
         return;
       }
     } else {
-      setShowMyBoard(myBoard);
+      setShowMyBoard(!showMyBoard);
     }
   };
 
@@ -636,7 +635,7 @@ const Playground = (props: Props) => {
                   )}`}
                   value={opponentCells[idx].value}
                   maxLength={1}
-                  onClick={(e) => onClickCell(e, mode, idx, false)}
+                  onClick={(e) => onClickCell(e, mode, idx)}
                   readOnly
                   onKeyDown={(e) => e.preventDefault()}
                 />
@@ -656,7 +655,7 @@ const Playground = (props: Props) => {
                 value={cell.value}
                 maxLength={1}
                 onChange={(e) => updateCellValue(idx, e.target.value)}
-                onClick={(e) => onClickCell(e, mode, idx, true)}
+                onClick={(e) => onClickCell(e, mode, idx)}
                 readOnly
                 onKeyDown={(e) => e.preventDefault()}
               />
