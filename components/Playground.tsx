@@ -30,6 +30,7 @@ import {
   firebaseToRoomDetail,
   getOpponentEncodedBoard,
 } from "../firebase/rooms";
+import useKeypress from "../utils/useKeypress";
 
 // Create your forceUpdate hook
 const useForceUpdate = () => {
@@ -77,6 +78,24 @@ const Playground = (props: Props) => {
   const [showAnnouncement, setShowAnnouncement] = useState<boolean>(false);
   const [announcementConfig, setAnnouncementConfig] =
     useState<IAnnouncement | null>();
+
+  useKeypress((e: KeyboardEvent) => {
+    e.preventDefault();
+
+    if (finished) {
+      return;
+    }
+
+    setShowMyBoard(true);
+
+    if (e.key.toLowerCase() === "enter") {
+      onEnterClicked();
+    } else if (e.key.toLowerCase() === "backspace") {
+      onDeleteClicked();
+    } else {
+      onInsertLetter(e.key);
+    }
+  });
 
   useEffect(() => {
     if (!userId) {
