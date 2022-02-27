@@ -8,15 +8,9 @@ import {
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
 import Playground from "../../../../components/Playground";
-import {
-  updatePracticeStreak,
-  updateRankStreak,
-} from "../../../../firebase/streaks";
+import { updateRankStreak } from "../../../../firebase/streaks";
 import { initializeUserInfo } from "../../../../firebase/users";
-import { generateNewPracticeWordIfEmpty } from "../../../../firebase/board";
 import { useRouter } from "next/router";
-import { onSnapshot, query, where } from "firebase/firestore";
-import { roomsCollection } from "../../../../firebase/clientApp";
 import { IRoom } from "../../../../interfaces/IRoom";
 import { closeRoomIfWon, queryRoomDetail } from "../../../../firebase/rooms";
 import { exitWaitRoom } from "../../../../firebase/waitRoom";
@@ -36,6 +30,27 @@ const RankGame: NextPage = () => {
     initializeUserInfo(AuthUser);
     exitWaitRoom(AuthUser.id);
   }, [AuthUser]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // HACK: remove both player from the queue
+      const fetchData = async () => {
+        const roomDetail = await queryRoomDetail(roomId as string);
+
+        if (!roomDetail) {
+          return;
+        }
+        await exitWaitRoom(roomDetail.side1);
+        await exitWaitRoom(roomDetail.side2);
+      };
+
+      fetchData();
+    }, 3000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [roomId]);
 
   useEffect(() => {
     if (!router.isReady) return;

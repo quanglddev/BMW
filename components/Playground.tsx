@@ -215,8 +215,8 @@ const Playground = (props: Props) => {
               : AnnouncementStatus.failure,
             title: winning ? "Victory" : "Defeat",
             message: winning
-              ? "Win by timeout!"
-              : `Lose by timeout. (${word.toUpperCase()})`,
+              ? `Win by time! (${word.toUpperCase()})`
+              : `Lose by time. (${word.toUpperCase()})`,
             buttonText: "New Rank Match",
             onMainButtonClick: () => {
               router.push("/play/game/rank");
@@ -252,6 +252,12 @@ const Playground = (props: Props) => {
         const disconnected = await playerDisconnected(userId, newRoomDetails);
         if (disconnected && !announcementConfig) {
           const winning = userId !== disconnected;
+
+          if (winning) {
+            // The one that DOESN'T disconnect can continue to play
+            return;
+          }
+
           onFinished(userId, winning, newRoomDetails);
           const config: IAnnouncement = {
             userId,
@@ -260,7 +266,7 @@ const Playground = (props: Props) => {
               : AnnouncementStatus.failure,
             title: winning ? "Victory" : "Defeat",
             message: winning
-              ? "Win by disconnect"
+              ? `Win by disconnect. (${word.toUpperCase()})`
               : `Lose by disconnect. (${word.toUpperCase()})`,
             buttonText: "New Rank Match",
             onMainButtonClick: () => {
@@ -299,7 +305,7 @@ const Playground = (props: Props) => {
         clearInterval(interval);
       }
       updatePresenceOnRoom(userId, roomId);
-    }, 30000);
+    }, 10 * 1000);
 
     return () => {
       clearInterval(interval);
@@ -408,7 +414,9 @@ const Playground = (props: Props) => {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
         title: won ? "Victory" : "Defeat",
-        message: won ? "Great Work!" : `The word is ${word.toUpperCase()}`,
+        message: won
+          ? `Great Work! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
         buttonText: "Practice Now",
         onMainButtonClick: () => {
           router.push("/play/game/practice");
@@ -424,7 +432,9 @@ const Playground = (props: Props) => {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
         title: won ? "Victory" : "Defeat",
-        message: won ? "Great Work!" : `The word is ${word.toUpperCase()}`,
+        message: won
+          ? `Great Work! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
         buttonText: "New Game",
         onMainButtonClick: () => {
           resetGame();
@@ -440,7 +450,9 @@ const Playground = (props: Props) => {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
         title: won ? "Victory" : "Defeat",
-        message: won ? "You Won!" : `The word is ${word.toUpperCase()}`,
+        message: won
+          ? `You Won! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
         buttonText: "New Rank Match",
         onMainButtonClick: () => {
           router.push("/play/game/rank");
@@ -455,7 +467,9 @@ const Playground = (props: Props) => {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
         title: won ? "Victory" : "Defeat",
-        message: won ? "You Won!" : `The word is ${word.toUpperCase()}`,
+        message: won
+          ? `You Won! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
         buttonText: "New Friendly Match",
         onMainButtonClick: () => {
           router.push("/play/game/friendly");

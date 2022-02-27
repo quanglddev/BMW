@@ -69,7 +69,7 @@ export const initializeUserInfo = async (authUser: AuthUserContext) => {
       buddies: [],
       country: "United States",
       aboutMe: "",
-      board: "7Pp3tkwa3IT0QqwuHVAj",
+      board: "aN452fkDiaG8P2lPTSOr",
       inFriendRequests: [],
       outFriendRequests: [],
       currentDailyStreak: 0,
