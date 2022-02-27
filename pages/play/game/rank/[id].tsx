@@ -32,7 +32,7 @@ const RankGame: NextPage = () => {
       }
 
       updateUserPresence(AuthUser.id);
-    }, 60 * 1000);
+    }, 15 * 1000);
 
     return () => {
       clearInterval(interval);
