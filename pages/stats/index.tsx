@@ -19,6 +19,7 @@ import {
   initializeUserInfo,
   queryGroupByIds,
   queryUser,
+  updateUserPresence,
 } from "../../firebase/users";
 import { exitWaitRoom } from "../../firebase/waitRoom";
 import IUser from "../../interfaces/IUser";
@@ -28,10 +29,23 @@ import AppBarLarge from "../../components/AppBarLarge";
 
 const Stats: NextPage = () => {
   const AuthUser = useAuthUser();
-  const router = useRouter();
   const [user, setUser] = useState<IUser | undefined>();
   const [rooms, setRooms] = useState<IRoom[]>([]);
   const [allPeople, setAllPeople] = useState<IUser[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     if (!AuthUser.id) {

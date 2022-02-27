@@ -13,12 +13,15 @@ import {
   IBoardSkin,
 } from "../../../../interfaces/IBoardSkin";
 import { queryBoardSkin } from "../../../../firebase/boardSkins";
-import { firebaseDataToUser, queryUser } from "../../../../firebase/users";
+import {
+  firebaseDataToUser,
+  queryUser,
+  updateUserPresence,
+} from "../../../../firebase/users";
 import BoardSkinManager from "../../../../models/BoardSkinManager";
 import LoadingPopup from "../../../../components/LoadingPopup";
 import {
   createJointFriendRoom,
-  createJointRoom,
   exitWaitRoom,
   joinWaitRoom,
   removeRankRoomId,
@@ -39,6 +42,20 @@ const FriendlyMatchmaking: NextPage = () => {
   const [cells, setCells] = useState<IBoardCell[]>([]);
   const [boardSkinManager, setBoardSkinManager] =
     useState<BoardSkinManager | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     const waitRoomQuery = query(waitRoomCollection);

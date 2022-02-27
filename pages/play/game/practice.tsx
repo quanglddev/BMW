@@ -9,7 +9,10 @@ import {
 } from "next-firebase-auth";
 import Playground from "../../../components/Playground";
 import { updatePracticeStreak } from "../../../firebase/streaks";
-import { initializeUserInfo } from "../../../firebase/users";
+import {
+  initializeUserInfo,
+  updateUserPresence,
+} from "../../../firebase/users";
 import { generateNewPracticeWordIfEmpty } from "../../../firebase/board";
 import { exitWaitRoom } from "../../../firebase/waitRoom";
 import AppBarLarge from "../../../components/AppBarLarge";
@@ -17,6 +20,20 @@ import AppBarLarge from "../../../components/AppBarLarge";
 const PracticeGame: NextPage = () => {
   const AuthUser = useAuthUser();
   const [practiceWord, setPracticeWord] = useState<string>("");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     if (!AuthUser.id) {

@@ -15,7 +15,7 @@ import {
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
 import { useEffect } from "react";
-import { initializeUserInfo } from "../../firebase/users";
+import { initializeUserInfo, updateUserPresence } from "../../firebase/users";
 import { exitWaitRoom } from "../../firebase/waitRoom";
 import AppBarLarge from "../../components/AppBarLarge";
 
@@ -24,6 +24,20 @@ const Settings: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const option = parseInt(id as string, 10);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     if (!AuthUser.id) {

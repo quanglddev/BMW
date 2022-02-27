@@ -5,6 +5,7 @@ import {
   query,
   setDoc,
   Timestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { AuthUserContext } from "next-firebase-auth";
@@ -160,4 +161,13 @@ export const queryGroupByIds = async (ids: string[]) => {
   }
 
   return result;
+};
+
+export const updateUserPresence = async (userId: string) => {
+  const foundDocRef = doc(firestore, "users", userId);
+  const current = new Date();
+
+  await updateDoc(foundDocRef, {
+    lastActivity: Timestamp.fromDate(current),
+  });
 };
