@@ -12,7 +12,7 @@ import LogOut from "../public/icons/logout.svg";
 import Settings from "../public/icons/settings.svg";
 import Help from "../public/icons/help.svg";
 import Today from "../public/icons/today.svg";
-import LeaderBoard from "../public/icons/leaderBoard.svg";
+import Stats from "../public/icons/stats.svg";
 import IUser from "../interfaces/IUser";
 import { useAuthUser, withAuthUser } from "next-firebase-auth";
 import { queryFriends } from "../firebase/users";
@@ -120,15 +120,30 @@ const ResponsiveAppBar = () => {
             </button>
 
             {/* Wifi */}
-            <button className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
+            <button
+              className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3"
+              onClick={() => navigateTo("/play/game/rank")}
+            >
               <Wifi className="fill-current w-8 h-8"></Wifi>
               <div className="text-black ml-2">Rank match</div>
             </button>
 
             {/* Friends */}
-            <button className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3">
+            <button
+              className="flex flex-row items-center w-10/12 h-12 -mt-1 ml-3"
+              onClick={() => navigateTo("/play/game/friendly")}
+            >
               <Friends className="fill-current w-8 h-8"></Friends>
               <div className="text-black ml-2">Friendly match</div>
+            </button>
+
+            {/* Stats */}
+            <button
+              className="flex flex-row items-center w-10/12 h-12 mt-12 ml-3"
+              onClick={() => navigateTo("/stats")}
+            >
+              <Stats className="fill-current w-8 h-8"></Stats>
+              <div className="text-black ml-2">Stats</div>
             </button>
 
             {/* Add friend button */}

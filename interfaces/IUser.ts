@@ -23,6 +23,7 @@ export default interface IUser {
   currentPracticeWord: string;
   previousPracticeWord: string;
   ongoingPracticeGuess: string;
+  rankRoomId?: string;
 }
 
 export const EmptyUser: IUser = {

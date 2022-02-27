@@ -19,6 +19,8 @@ const gamesCollection = collection(firestore, "games");
 const usersCollection = collection(firestore, "users");
 const boardSkinsCollection = collection(firestore, "boardSkins");
 const dailyCollection = collection(firestore, "daily");
+const waitRoomCollection = collection(firestore, "waitRoom");
+const roomsCollection = collection(firestore, "rooms");
 
 export {
   firestore,
@@ -27,4 +29,6 @@ export {
   gamesCollection,
   boardSkinsCollection,
   dailyCollection,
+  waitRoomCollection,
+  roomsCollection,
 };

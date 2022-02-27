@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, MouseEvent } from "react";
 import {
   EmptyBoardSkin,
   IBoardCell,
@@ -15,13 +15,22 @@ import { AnnouncementStatus, IAnnouncement } from "../interfaces/IAnnouncement";
 import Fireworks from "fireworks/lib/react";
 import { useRouter } from "next/router";
 import { onSnapshot, query, where } from "firebase/firestore";
-import { usersCollection } from "../firebase/clientApp";
+import { roomsCollection, usersCollection } from "../firebase/clientApp";
 import {
   stringToCells,
   updateBoard,
   wipeBoardIfNewDay,
   wipeBoardIfNewPracticeWord as wipeBoardIfNewPracticeWordAndFinished,
 } from "../firebase/board";
+import { IRoom } from "../interfaces/IRoom";
+import {
+  playerDisconnected,
+  getEncodedBoard,
+  updatePresenceOnRoom,
+  firebaseToRoomDetail,
+  getOpponentEncodedBoard,
+} from "../firebase/rooms";
+import useKeypress from "../utils/useKeypress";
 
 // Create your forceUpdate hook
 const useForceUpdate = () => {
@@ -33,9 +42,10 @@ interface Props {
   userId: string;
   word: string;
   mode: string;
+  roomId?: string;
   defaultShowAnnouncement?: boolean;
   defaultAnnouncementConfig?: IAnnouncement;
-  onFinished: (userId: string, won: boolean) => void;
+  onFinished: (userId: string, won: boolean, roomDetail?: IRoom) => void;
 }
 
 const Playground = (props: Props) => {
@@ -43,6 +53,7 @@ const Playground = (props: Props) => {
     userId,
     word,
     mode,
+    roomId,
     defaultShowAnnouncement,
     defaultAnnouncementConfig,
     onFinished,
@@ -51,17 +62,40 @@ const Playground = (props: Props) => {
   const forceUpdate = useForceUpdate();
   const cellsRef = useRef<(HTMLInputElement | null)[]>([]);
   const [cells, setCells] = useState<IBoardCell[]>([]);
+  const [opponentCells, setOpponentCells] = useState<IBoardCell[]>([]);
   const [boardSkin, setBoardSkin] = useState<IBoardSkin>(EmptyBoardSkin);
   const [boardSkinManager, setBoardSkinManager] =
+    useState<BoardSkinManager | null>(null);
+  const [opponentBoardSkinManager, setOpponentBoardSkinManager] =
     useState<BoardSkinManager | null>(null);
   const [fireworkX, setFireworkX] = useState<number>(0);
   const [fireworkY, setFireworkY] = useState<number>(0);
   const [runFirework, setRunFirework] = useState<boolean>(false);
   const [finished, setFinished] = useState<boolean>(false);
+  const [roomDetail, setRoomDetail] = useState<IRoom | undefined>();
+  const [showMyBoard, setShowMyBoard] = useState<boolean>(true);
 
   const [showAnnouncement, setShowAnnouncement] = useState<boolean>(false);
   const [announcementConfig, setAnnouncementConfig] =
     useState<IAnnouncement | null>();
+
+  useKeypress((e: KeyboardEvent) => {
+    e.preventDefault();
+
+    if (finished) {
+      return;
+    }
+
+    setShowMyBoard(true);
+
+    if (e.key.toLowerCase() === "enter") {
+      onEnterClicked();
+    } else if (e.key.toLowerCase() === "backspace") {
+      onDeleteClicked();
+    } else {
+      onInsertLetter(e.key);
+    }
+  });
 
   useEffect(() => {
     if (!userId) {
@@ -110,7 +144,7 @@ const Playground = (props: Props) => {
 
     const userQuery = query(usersCollection, where("id", "==", userId));
 
-    const unsubscribeStats = onSnapshot(
+    const unsubscribe = onSnapshot(
       userQuery,
       { includeMetadataChanges: true },
       (querySnapshot) => {
@@ -130,13 +164,153 @@ const Playground = (props: Props) => {
     );
 
     return () => {
-      unsubscribeStats();
+      unsubscribe();
     };
   }, [userId, mode, boardSkin]);
 
   useEffect(() => {
+    if (mode !== "practice") {
+      return;
+    }
+
     wipeBoardIfNewPracticeWordAndFinished(mode, userId);
   }, [mode, userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    if (mode !== "rank" && mode !== "friendly") {
+      return;
+    }
+
+    const roomQuery = query(roomsCollection, where("id", "==", roomId));
+
+    const unsubscribe = onSnapshot(
+      roomQuery,
+      { includeMetadataChanges: true },
+      async (querySnapshot) => {
+        if (querySnapshot.docs.length === 0) {
+          return;
+        }
+
+        const newRoomDetails = firebaseToRoomDetail(
+          querySnapshot.docs[0].data()
+        );
+
+        // There's a winner
+        if (
+          newRoomDetails.finishedTime &&
+          newRoomDetails.winner &&
+          !announcementConfig
+        ) {
+          // Determine winner loser
+          const winning = newRoomDetails.winner === userId;
+          onFinished(userId, winning, newRoomDetails);
+          const config: IAnnouncement = {
+            userId,
+            status: winning
+              ? AnnouncementStatus.success
+              : AnnouncementStatus.failure,
+            title: winning ? "Victory" : "Defeat",
+            message: winning
+              ? `Win by time! (${word.toUpperCase()})`
+              : `Lose by time. (${word.toUpperCase()})`,
+            buttonText: "New Rank Match",
+            onMainButtonClick: () => {
+              router.push("/play/game/rank");
+            },
+            onClose: () => {
+              router.push("/");
+            },
+          };
+          setAnnouncementConfig(config);
+          setFinished(true);
+        }
+
+        setRoomDetail(newRoomDetails);
+
+        const encodedBoard = getEncodedBoard(userId, newRoomDetails);
+        const opponentEncodedBoard = getOpponentEncodedBoard(
+          userId,
+          newRoomDetails
+        );
+        const newCells: IBoardCell[] = stringToCells(encodedBoard);
+        const newOpponentCells: IBoardCell[] =
+          stringToCells(opponentEncodedBoard);
+
+        setCells(newCells);
+        setOpponentCells(newOpponentCells);
+        wipeBoardIfNewDay(mode, newCells, userId);
+        setBoardSkinManager(new BoardSkinManager(newCells, boardSkin));
+        setOpponentBoardSkinManager(
+          new BoardSkinManager(newOpponentCells, boardSkin)
+        );
+
+        // There's a disconnection
+        const disconnected = await playerDisconnected(userId, newRoomDetails);
+        if (disconnected && !announcementConfig) {
+          const winning = userId !== disconnected;
+
+          if (winning) {
+            // The one that DOESN'T disconnect can continue to play
+            return;
+          }
+
+          onFinished(userId, winning, newRoomDetails);
+          const config: IAnnouncement = {
+            userId,
+            status: winning
+              ? AnnouncementStatus.success
+              : AnnouncementStatus.failure,
+            title: winning ? "Victory" : "Defeat",
+            message: winning
+              ? `Win by disconnect. (${word.toUpperCase()})`
+              : `Lose by disconnect. (${word.toUpperCase()})`,
+            buttonText: "New Rank Match",
+            onMainButtonClick: () => {
+              router.push("/play/game/rank");
+            },
+            onClose: () => {
+              router.push("/");
+            },
+          };
+          setAnnouncementConfig(config);
+          setFinished(true);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [
+    userId,
+    mode,
+    boardSkin,
+    roomId,
+    onFinished,
+    router,
+    word,
+    announcementConfig,
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!roomId) {
+        return;
+      }
+      if (finished) {
+        clearInterval(interval);
+      }
+      updatePresenceOnRoom(userId, roomId);
+    }, 10 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [userId, roomId, finished]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -162,6 +336,10 @@ const Playground = (props: Props) => {
   }, [cells, boardSkin]);
 
   useEffect(() => {
+    setOpponentBoardSkinManager(new BoardSkinManager(opponentCells, boardSkin));
+  }, [opponentCells, boardSkin]);
+
+  useEffect(() => {
     if (!announcementConfig) {
       setShowAnnouncement(false);
       return;
@@ -172,16 +350,27 @@ const Playground = (props: Props) => {
   const updateCellValue = (cellIdx: number, value: string) => {
     const clone = JSON.parse(JSON.stringify(cells)) as IBoardCell[];
     clone[cellIdx].value = value;
-    updateBoard(mode, clone, userId);
+    updateBoard(mode, clone, userId, roomDetail);
   };
 
-  const onClickCell = (cellIdx: number) => {
+  const onClickCell = (
+    e: MouseEvent<HTMLInputElement, globalThis.MouseEvent>,
+    mode: string,
+    cellIdx: number
+  ) => {
+    e.preventDefault();
+
     // Determine if cell is clickable
-    if (cells[cellIdx].state !== 0) {
-      displayError(
-        "You can't go back and change the beginning, but you can start where you are and change the ending."
-      );
-      return;
+    if (mode !== "rank" && mode != "friendly") {
+      // Too time-consuming for player
+      if (cells[cellIdx].state !== 0) {
+        displayError(
+          "You can't go back and change the beginning, but you can start where you are and change the ending."
+        );
+        return;
+      }
+    } else {
+      setShowMyBoard(!showMyBoard);
     }
   };
 
@@ -213,7 +402,7 @@ const Playground = (props: Props) => {
         value: "",
         state: 0,
       }));
-    updateBoard(mode, defaultData, userId);
+    updateBoard(mode, defaultData, userId, roomDetail);
     setAnnouncementConfig(null);
     setShowAnnouncement(false);
     setFinished(false);
@@ -225,7 +414,9 @@ const Playground = (props: Props) => {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
         title: won ? "Victory" : "Defeat",
-        message: won ? "Great Work!" : `The word is ${word.toUpperCase()}`,
+        message: won
+          ? `Great Work! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
         buttonText: "Practice Now",
         onMainButtonClick: () => {
           router.push("/play/game/practice");
@@ -241,7 +432,9 @@ const Playground = (props: Props) => {
         userId,
         status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
         title: won ? "Victory" : "Defeat",
-        message: won ? "Great Work!" : `The word is ${word.toUpperCase()}`,
+        message: won
+          ? `Great Work! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
         buttonText: "New Game",
         onMainButtonClick: () => {
           resetGame();
@@ -252,6 +445,40 @@ const Playground = (props: Props) => {
       };
 
       setAnnouncementConfig(config);
+    } else if (mode === "rank") {
+      const config: IAnnouncement = {
+        userId,
+        status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
+        title: won ? "Victory" : "Defeat",
+        message: won
+          ? `You Won! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
+        buttonText: "New Rank Match",
+        onMainButtonClick: () => {
+          router.push("/play/game/rank");
+        },
+        onClose: () => {
+          router.push("/");
+        },
+      };
+      setAnnouncementConfig(config);
+    } else if (mode === "friendly") {
+      const config: IAnnouncement = {
+        userId,
+        status: won ? AnnouncementStatus.success : AnnouncementStatus.failure,
+        title: won ? "Victory" : "Defeat",
+        message: won
+          ? `You Won! (${word.toUpperCase()})`
+          : `The word is ${word.toUpperCase()}`,
+        buttonText: "New Friendly Match",
+        onMainButtonClick: () => {
+          router.push("/play/game/friendly");
+        },
+        onClose: () => {
+          router.push("/");
+        },
+      };
+      setAnnouncementConfig(config);
     }
   };
 
@@ -259,14 +486,35 @@ const Playground = (props: Props) => {
     let filledLineIdx = getLatestNotCommittedLineIdx();
 
     if (guessedWord === word) {
-      onFinished(userId, true);
+      onFinished(userId, true, roomDetail);
       displayAnnouncement(true);
       setFinished(true);
     } else if (filledLineIdx === 5) {
-      onFinished(userId, false);
+      onFinished(userId, false, roomDetail);
       displayAnnouncement(false);
       setFinished(true);
     }
+  };
+
+  const isCellGreen = (guessedWord: string, idx: number): boolean => {
+    return guessedWord[idx].toLowerCase() === word[idx].toLowerCase();
+  };
+
+  const isCellYellow = (guessedWord: string, idx: number): boolean => {
+    let letterOccurrenceIdx: number[] = [];
+    for (let i = 0; i < word.length; i++) {
+      if (word[i].toLowerCase() === guessedWord[idx].toLowerCase()) {
+        letterOccurrenceIdx.push(i);
+      }
+    }
+
+    for (let _idx of letterOccurrenceIdx) {
+      if (guessedWord[_idx].toLowerCase() !== word[_idx].toLowerCase()) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   const startRevealingSequence = async (
@@ -281,14 +529,14 @@ const Playground = (props: Props) => {
       await startFirework(lineIdx * 5 + i);
 
       // Update
-      if (guessedWord[i] === word[i]) {
+      if (isCellGreen(guessedWord, i)) {
         clone[lineIdx * 5 + i].state = 3;
-      } else if (word.indexOf(guessedWord[i]) > -1) {
+      } else if (isCellYellow(guessedWord, i)) {
         clone[lineIdx * 5 + i].state = 2;
       } else {
         clone[lineIdx * 5 + i].state = 1;
       }
-      updateBoard(mode, clone, userId);
+      updateBoard(mode, clone, userId, roomDetail);
       forceUpdate();
     }
     forceUpdate();
@@ -371,6 +619,8 @@ const Playground = (props: Props) => {
       return;
     }
 
+    setShowMyBoard(true);
+
     if (keyCode.toLowerCase() === "enter") {
       onEnterClicked();
     } else if (keyCode.toLowerCase() === "⌫") {
@@ -424,7 +674,7 @@ const Playground = (props: Props) => {
   };
 
   return (
-    <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1">
+    <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 md:flex-row">
       <div className="z-40">
         {showAnnouncement && announcementConfig && (
           <GameResultPopup
@@ -439,37 +689,59 @@ const Playground = (props: Props) => {
           ></GameResultPopup>
         )}
       </div>
-      <div className="flex flex-row flex-wrap justify-center items-center w-full">
+
+      <div className="flex flex-row flex-wrap justify-center items-center w-full max-w-xs sm:max-w-sm md:w-7/12">
         {cells.map((cell, idx) => (
-          <div
-            key={idx}
-            className={`flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${cellOuterClasses(
-              cell.state
-            )}`}
-          >
-            <input
-              ref={(el) => (cellsRef.current[idx] = el)}
-              type="text"
-              className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
-                cell.state
-              )}`}
-              value={cell.value}
-              maxLength={1}
-              onChange={(e) => updateCellValue(idx, e.target.value)}
-              onClick={(e) => onClickCell(idx)}
-              readOnly
-              onKeyDown={(e) => e.preventDefault()}
-            />
+          <div className="relative" key={idx}>
+            {(mode === "rank" || mode === "friendly") &&
+              idx < opponentCells.length && (
+                <div
+                  className={`absolute mt-3 top-0 flex justify-center items-center w-12 h-12 sm:w-14 sm:h-14 m-2 drop-shadow-md cursor-not-allowed ${
+                    showMyBoard ? "z-0" : "z-20"
+                  } ${cellOuterClasses(opponentCells[idx].state)}`}
+                >
+                  <input
+                    type="text"
+                    className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none cursor-not-allowed ${cellInnerClasses(
+                      opponentCells[idx].state
+                    )}`}
+                    value={""}
+                    maxLength={1}
+                    onClick={(e) => onClickCell(e, mode, idx)}
+                    readOnly
+                    onKeyDown={(e) => e.preventDefault()}
+                  />
+                </div>
+              )}
+            <div
+              className={`relative flex justify-center items-center w-12 h-12 sm:w-14 sm:h-14 m-2 drop-shadow-md cursor-not-allowed ${
+                showMyBoard ? "z-20" : "z-0"
+              } ${cellOuterClasses(cell.state)}`}
+            >
+              <input
+                ref={(el) => (cellsRef.current[idx] = el)}
+                type="text"
+                className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none cursor-not-allowed ${cellInnerClasses(
+                  cell.state
+                )}`}
+                value={cell.value}
+                maxLength={1}
+                onChange={(e) => updateCellValue(idx, e.target.value)}
+                onClick={(e) => onClickCell(e, mode, idx)}
+                readOnly
+                onKeyDown={(e) => e.preventDefault()}
+              />
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-0 right-0 left-0">
+      <div className="w-full flex flex-col items-center mt-5 select-none justify-end fixed bottom-0 right-0 left-0 md:w-5/12 md:relative">
         <div className="w-full flex justify-center mt-[5px]">
           {keyboard[0].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 w-8 rounded-md text-sm capitalize font-semibold mx-[3.5px] ${keyClasses(
+              className={`flex items-center justify-center h-16 w-8 md:h-12 md:w-6 rounded-md text-sm capitalize font-semibold mx-[3.5px] hover:bg-slate-100 ${keyClasses(
                 keyCode.value
               )}`}
               onClick={() => onKeyBoardClick(keyCode.value)}
@@ -482,7 +754,7 @@ const Playground = (props: Props) => {
           {keyboard[1].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 w-8 rounded-md text-sm capitalize font-semibold mx-[3.5px] ${keyClasses(
+              className={`flex items-center justify-center h-16 w-8 md:h-12 md:w-6 rounded-md text-sm capitalize font-semibold mx-[3.5px] hover:bg-slate-100 ${keyClasses(
                 keyCode.value
               )}`}
               onClick={() => onKeyBoardClick(keyCode.value)}
@@ -495,8 +767,8 @@ const Playground = (props: Props) => {
           {keyboard[2].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 ${
-                keyCode.isWide ? "w-12" : "w-8"
+              className={`flex items-center justify-center h-16 md:h-12 hover:bg-slate-100 ${
+                keyCode.isWide ? "w-12" : "w-8 md:w-6"
               } rounded-md ${
                 keyCode.isBigText ? "text-xl" : "text-sm"
               } capitalize font-semibold mx-[3.5px] ${keyClasses(
