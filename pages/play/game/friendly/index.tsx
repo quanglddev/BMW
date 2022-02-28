@@ -34,6 +34,7 @@ import {
 import { useRouter } from "next/router";
 import Close from "../../../../public/icons/close.svg";
 import AppBarLarge from "../../../../components/AppBarLarge";
+import { queryRoomDetail } from "../../../../firebase/rooms";
 
 const FriendlyMatchmaking: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -42,6 +43,12 @@ const FriendlyMatchmaking: NextPage = () => {
   const [cells, setCells] = useState<IBoardCell[]>([]);
   const [boardSkinManager, setBoardSkinManager] =
     useState<BoardSkinManager | null>(null);
+
+  const [found, setFound] = useState<boolean>(false);
+  const [side1Name, setSide1Name] = useState<string>("");
+  const [side1Avatar, setSide1Avatar] = useState<string>("");
+  const [side2Name, setSide2Name] = useState<string>("");
+  const [side2Avatar, setSide2Avatar] = useState<string>("");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -76,6 +83,26 @@ const FriendlyMatchmaking: NextPage = () => {
 
       if (user && user.rankRoomId) {
         removeRankRoomId(user);
+        setFound(true);
+        const roomDetail = await queryRoomDetail(user.rankRoomId);
+
+        if (!roomDetail) {
+          return;
+        }
+
+        const side1 = await queryUser(roomDetail.side1);
+        const side2 = await queryUser(roomDetail.side2);
+
+        if (!side1 || !side2) {
+          return;
+        }
+
+        setSide1Name(side1.fullName);
+        setSide2Name(side2.fullName);
+        setSide1Avatar(side1.imageUrl);
+        setSide2Avatar(side2.imageUrl);
+
+        await new Promise((r) => setTimeout(r, 2000));
         router.push(`/play/game/friendly/${user.rankRoomId}`);
       }
 
@@ -91,6 +118,27 @@ const FriendlyMatchmaking: NextPage = () => {
         if (!roomId) {
           return;
         }
+
+        setFound(true);
+        const roomDetail = await queryRoomDetail(roomId);
+
+        if (!roomDetail) {
+          return;
+        }
+
+        const side1 = await queryUser(roomDetail.side1);
+        const side2 = await queryUser(roomDetail.side2);
+
+        if (!side1 || !side2) {
+          return;
+        }
+
+        setSide1Name(side1.fullName);
+        setSide2Name(side2.fullName);
+        setSide1Avatar(side1.imageUrl);
+        setSide2Avatar(side2.imageUrl);
+
+        await new Promise((r) => setTimeout(r, 2000));
 
         router.push(`/play/game/friendly/${roomId}`);
       }
@@ -226,7 +274,13 @@ const FriendlyMatchmaking: NextPage = () => {
       </div>
 
       <div className="z-40">
-        <LoadingPopup></LoadingPopup>
+        <LoadingPopup
+          found={found}
+          side1Name={side1Name}
+          side2Name={side2Name}
+          side1Avatar={side1Avatar}
+          side2Avatar={side2Avatar}
+        ></LoadingPopup>
       </div>
 
       {AuthUser.id && (
