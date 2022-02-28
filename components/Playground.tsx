@@ -510,7 +510,28 @@ const Playground = (props: Props) => {
 
     for (let _idx of letterOccurrenceIdx) {
       if (guessedWord[_idx].toLowerCase() !== word[_idx].toLowerCase()) {
-        return true;
+        // Double check if the letter hasn't been mark green or yellow before
+        const count = word.split(word[_idx]).length - 1;
+        if (count === 1) {
+          // If the letter has appeared before, return false
+          for (let i = 0; i < idx; i++) {
+            if (guessedWord[i].toLowerCase() === word[_idx].toLowerCase()) {
+              return false;
+            }
+          }
+
+          // If the letter has a green anywhere, return false
+          for (let i = 0; i < word.length; i++) {
+            if (word[i].toLowerCase() === guessedWord[i].toLowerCase()) {
+              return false;
+            }
+          }
+
+          return true;
+        } else {
+          // Has 2
+          return true;
+        }
       }
     }
 
@@ -767,7 +788,7 @@ const Playground = (props: Props) => {
           {keyboard[2].map((keyCode) => (
             <button
               key={keyCode.value}
-              className={`flex items-center justify-center h-16 md:h-12 hover:bg-slate-100 ${
+              className={`flex items-center justify-center h-16 md:h-12 ${
                 keyCode.isWide ? "w-12" : "w-8 md:w-6"
               } rounded-md ${
                 keyCode.isBigText ? "text-xl" : "text-sm"

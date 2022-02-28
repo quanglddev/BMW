@@ -13,7 +13,11 @@ import {
   IBoardSkin,
 } from "../../../../interfaces/IBoardSkin";
 import { queryBoardSkin } from "../../../../firebase/boardSkins";
-import { firebaseDataToUser, queryUser } from "../../../../firebase/users";
+import {
+  firebaseDataToUser,
+  queryUser,
+  updateUserPresence,
+} from "../../../../firebase/users";
 import BoardSkinManager from "../../../../models/BoardSkinManager";
 import LoadingPopup from "../../../../components/LoadingPopup";
 import {
@@ -22,7 +26,7 @@ import {
   joinWaitRoom,
   removeRankRoomId,
 } from "../../../../firebase/waitRoom";
-import { onSnapshot, query, Unsubscribe, where } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 import {
   usersCollection,
   waitRoomCollection,
@@ -30,6 +34,7 @@ import {
 import { useRouter } from "next/router";
 import Close from "../../../../public/icons/close.svg";
 import AppBarLarge from "../../../../components/AppBarLarge";
+import { queryRoomDetail } from "../../../../firebase/rooms";
 
 const RankMatchmaking: NextPage = () => {
   const AuthUser = useAuthUser();
@@ -38,6 +43,26 @@ const RankMatchmaking: NextPage = () => {
   const [cells, setCells] = useState<IBoardCell[]>([]);
   const [boardSkinManager, setBoardSkinManager] =
     useState<BoardSkinManager | null>(null);
+
+  const [found, setFound] = useState<boolean>(false);
+  const [side1Name, setSide1Name] = useState<string>("");
+  const [side1Avatar, setSide1Avatar] = useState<string>("");
+  const [side2Name, setSide2Name] = useState<string>("");
+  const [side2Avatar, setSide2Avatar] = useState<string>("");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 15 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     const waitRoomQuery = query(waitRoomCollection);
@@ -58,6 +83,28 @@ const RankMatchmaking: NextPage = () => {
 
       if (user && user.rankRoomId) {
         removeRankRoomId(user);
+
+        setFound(true);
+        const roomDetail = await queryRoomDetail(user.rankRoomId);
+
+        if (!roomDetail) {
+          return;
+        }
+
+        const side1 = await queryUser(roomDetail.side1);
+        const side2 = await queryUser(roomDetail.side2);
+
+        if (!side1 || !side2) {
+          return;
+        }
+
+        setSide1Name(side1.fullName);
+        setSide2Name(side2.fullName);
+        setSide1Avatar(side1.imageUrl);
+        setSide2Avatar(side2.imageUrl);
+
+        await new Promise((r) => setTimeout(r, 2000));
+
         router.push(`/play/game/rank/${user.rankRoomId}`);
       }
 
@@ -73,6 +120,26 @@ const RankMatchmaking: NextPage = () => {
         if (!roomId) {
           return;
         }
+        setFound(true);
+        const roomDetail = await queryRoomDetail(roomId);
+
+        if (!roomDetail) {
+          return;
+        }
+
+        const side1 = await queryUser(roomDetail.side1);
+        const side2 = await queryUser(roomDetail.side2);
+
+        if (!side1 || !side2) {
+          return;
+        }
+
+        setSide1Name(side1.fullName);
+        setSide2Name(side2.fullName);
+        setSide1Avatar(side1.imageUrl);
+        setSide2Avatar(side2.imageUrl);
+
+        await new Promise((r) => setTimeout(r, 2000));
 
         router.push(`/play/game/rank/${roomId}`);
       }
@@ -208,7 +275,13 @@ const RankMatchmaking: NextPage = () => {
       </div>
 
       <div className="z-40">
-        <LoadingPopup></LoadingPopup>
+        <LoadingPopup
+          found={found}
+          side1Name={side1Name}
+          side2Name={side2Name}
+          side1Avatar={side1Avatar}
+          side2Avatar={side2Avatar}
+        ></LoadingPopup>
       </div>
 
       {AuthUser.id && (
@@ -240,7 +313,7 @@ const RankMatchmaking: NextPage = () => {
       )}
 
       {AuthUser.id && (
-        <div className="flex items-center justify-center w-full h-12 bg-white z-50 fixed bottom-0 right-0 left-0">
+        <div className="flex items-center justify-center w-full h-12 bg-white z-40 fixed bottom-0 right-0 left-0">
           <button
             className="w-8 h-8"
             onClick={() => onCancelMatchmaking(AuthUser.id!)}

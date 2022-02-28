@@ -6,12 +6,7 @@ import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import Muscle from "../public/icons/muscle.svg";
 import Wifi from "../public/icons/wifi.svg";
 import Friends from "../public/icons/friends.svg";
-import LogOut from "../public/icons/logout.svg";
-import Logo from "../public/icons/logo.svg";
-import Settings from "../public/icons/settings.svg";
 import Today from "../public/icons/today2.svg";
-import Today3 from "../public/icons/today3.svg";
-import Stats from "../public/icons/stats.svg";
 import Game from "../interfaces/IGame";
 import { useRouter } from "next/router";
 import {
@@ -20,7 +15,7 @@ import {
   withAuthUser,
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
-import { initializeUserInfo } from "../firebase/users";
+import { initializeUserInfo, updateUserPresence } from "../firebase/users";
 import { exitWaitRoom } from "../firebase/waitRoom";
 import AppBarLarge from "../components/AppBarLarge";
 
@@ -28,6 +23,20 @@ const Home: NextPage = () => {
   const AuthUser = useAuthUser();
   const router = useRouter();
   const [allGames, setAllGames] = useState<Game[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 15 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     if (!AuthUser.id) {

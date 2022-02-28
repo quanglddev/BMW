@@ -9,7 +9,10 @@ import {
 } from "next-firebase-auth";
 import Playground from "../../../../components/Playground";
 import { updateRankStreak } from "../../../../firebase/streaks";
-import { initializeUserInfo } from "../../../../firebase/users";
+import {
+  initializeUserInfo,
+  updateUserPresence,
+} from "../../../../firebase/users";
 import { useRouter } from "next/router";
 import { IRoom } from "../../../../interfaces/IRoom";
 import { closeRoomIfWon, queryRoomDetail } from "../../../../firebase/rooms";
@@ -21,6 +24,20 @@ const FriendlyGame: NextPage = () => {
   const router = useRouter();
   const { id: roomId } = router.query;
   const [word, setWord] = useState<string>("");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!AuthUser.id) {
+        return;
+      }
+
+      updateUserPresence(AuthUser.id);
+    }, 15 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [AuthUser.id]);
 
   useEffect(() => {
     if (!AuthUser.id) {
