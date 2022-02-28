@@ -224,60 +224,6 @@ const Info: NextPage = () => {
               is not in the word.
             </div>
 
-            <div className="flex w-full flex-col items-center justify-center relative">
-              <div className="absolute mt-6 flex w-full flex-col items-center justify-center z-0 bg-pink-light-1 lg:pl-36">
-                <div className="flex flex-row w-full h-full justify-center items-center">
-                  <div className="flex flex-row flex-wrap justify-center items-center w-full">
-                    {cells.map((cell, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md p-0 ${cellOuterClasses(
-                          idx === 0 ? 2 : 0
-                        )}`}
-                      >
-                        <input
-                          type="text"
-                          className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none p-0 ${cellInnerClasses(
-                            idx === 0 ? 2 : 0
-                          )}`}
-                          value={cell.value}
-                          maxLength={1}
-                          readOnly
-                          onKeyDown={(e) => e.preventDefault()}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex w-full flex-col items-center justify-center z-20 bg-pink-light-1 lg:pl-36">
-                <div className="flex flex-row w-full h-full justify-center items-center">
-                  <div className="flex flex-row flex-wrap justify-center items-center w-full">
-                    {cells.map((cell, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${cellOuterClasses(
-                          idx === 0 ? 3 : 0
-                        )}`}
-                      >
-                        <input
-                          type="text"
-                          className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
-                            idx === 0 ? 3 : 0
-                          )}`}
-                          value={cell.value}
-                          maxLength={1}
-                          readOnly
-                          onKeyDown={(e) => e.preventDefault()}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="mt-3 px-3">
               During battle, check opponent&apos;s progress by the bottom color
               or click any cells to see their board.
