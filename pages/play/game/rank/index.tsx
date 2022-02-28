@@ -258,7 +258,7 @@ const RankMatchmaking: NextPage = () => {
       )}
 
       {AuthUser.id && (
-        <div className="flex items-center justify-center w-full h-12 bg-white z-50 fixed bottom-0 right-0 left-0">
+        <div className="flex items-center justify-center w-full h-12 bg-white z-40 fixed bottom-0 right-0 left-0">
           <button
             className="w-8 h-8"
             onClick={() => onCancelMatchmaking(AuthUser.id!)}
