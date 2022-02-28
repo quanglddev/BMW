@@ -510,28 +510,7 @@ const Playground = (props: Props) => {
 
     for (let _idx of letterOccurrenceIdx) {
       if (guessedWord[_idx].toLowerCase() !== word[_idx].toLowerCase()) {
-        // Double check if the letter hasn't been mark green or yellow before
-        const count = word.split(word[_idx]).length - 1;
-        if (count === 1) {
-          // If the letter has appeared before, return false
-          for (let i = 0; i < idx; i++) {
-            if (guessedWord[i].toLowerCase() === word[_idx].toLowerCase()) {
-              return false;
-            }
-          }
-
-          // If the letter has a green anywhere, return false
-          for (let i = 0; i < word.length; i++) {
-            if (word[i].toLowerCase() === guessedWord[i].toLowerCase()) {
-              return false;
-            }
-          }
-
-          return true;
-        } else {
-          // Has 2
-          return true;
-        }
+        return true;
       }
     }
 
