@@ -72,13 +72,13 @@ const ResponsiveAppBar = () => {
           </div>
         </div>
         <div className="flex flex-row items-center">
-          {/* <button className="w-8 h-8 mr-3">
-            <LeaderBoard
+          <button className="w-8 h-8 mr-3">
+            <Help
               className="fill-current text-pink-light-1 w-full h-full"
-              onClick={() => setSideBarOpen(true)}
-            ></LeaderBoard>
+              onClick={() => navigateTo("/info")}
+            ></Help>
           </button>
-          <button className="w-6 h-6 mr-3">
+          {/* <button className="w-6 h-6 mr-3">
             <Settings
               className="fill-current text-black w-full h-full"
               onClick={() => setSideBarOpen(true)}
@@ -171,7 +171,10 @@ const ResponsiveAppBar = () => {
               <div className="ml-2 text-md text-gray-700">Settings</div>
             </button>
 
-            <button className="flex flex-row items-center my-2">
+            <button
+              className="flex flex-row items-center my-2"
+              onClick={() => navigateTo("/info")}
+            >
               <Help className="h-5 w-5 ml-3 fill-current text-gray-700"></Help>
               <div className="ml-2 text-md text-gray-700">Help</div>
             </button>
