@@ -7,18 +7,12 @@ import {
   withAuthUser,
   withAuthUserTokenSSR,
 } from "next-firebase-auth";
-import {
-  EmptyBoardSkin,
-  IBoardCell,
-  IBoardSkin,
-} from "../../../../interfaces/IBoardSkin";
-import { queryBoardSkin } from "../../../../firebase/boardSkins";
+import { IBoardCell } from "../../../../interfaces/IBoardSkin";
 import {
   firebaseDataToUser,
   queryUser,
   updateUserPresence,
 } from "../../../../firebase/users";
-import BoardSkinManager from "../../../../models/BoardSkinManager";
 import LoadingPopup from "../../../../components/LoadingPopup";
 import {
   createJointRoom,
@@ -39,10 +33,6 @@ import { queryRoomDetail } from "../../../../firebase/rooms";
 const RankMatchmaking: NextPage = () => {
   const AuthUser = useAuthUser();
   const router = useRouter();
-  const [boardSkin, setBoardSkin] = useState<IBoardSkin>(EmptyBoardSkin);
-  const [cells, setCells] = useState<IBoardCell[]>([]);
-  const [boardSkinManager, setBoardSkinManager] =
-    useState<BoardSkinManager | null>(null);
 
   const [found, setFound] = useState<boolean>(false);
   const [side1Name, setSide1Name] = useState<string>("");
@@ -103,7 +93,7 @@ const RankMatchmaking: NextPage = () => {
         setSide1Avatar(side1.imageUrl);
         setSide2Avatar(side2.imageUrl);
 
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 5000));
 
         router.push(`/play/game/rank/${user.rankRoomId}`);
       }
@@ -139,7 +129,7 @@ const RankMatchmaking: NextPage = () => {
         setSide1Avatar(side1.imageUrl);
         setSide2Avatar(side2.imageUrl);
 
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 5000));
 
         router.push(`/play/game/rank/${roomId}`);
       }
@@ -189,66 +179,9 @@ const RankMatchmaking: NextPage = () => {
     };
   }, [AuthUser.id, router]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!AuthUser.id) {
-        return;
-      }
-
-      const user = await queryUser(AuthUser.id);
-
-      if (!user) {
-        return;
-      }
-
-      const boardId = user.board;
-      const boardSkin = await queryBoardSkin(boardId);
-
-      if (!boardSkin) {
-        return;
-      }
-
-      setBoardSkin(boardSkin);
-
-      const randomCells = Array(30)
-        .fill(null)
-        .map(() => getRandomCell());
-      setCells(randomCells);
-      setBoardSkinManager(new BoardSkinManager(randomCells, boardSkin));
-    };
-
-    fetchData();
-  }, [AuthUser.id]);
-
   const onCancelMatchmaking = async (userId: string) => {
     await exitWaitRoom(userId);
     router.push("/");
-  };
-
-  const cellOuterClasses = (state: number): string => {
-    if (!boardSkinManager) {
-      return "";
-    }
-
-    const result: string[] = [];
-    const class1 = boardSkinManager.getCellBorderWidth(state);
-    const class2 = boardSkinManager.getCellBorderColor(state);
-    result.push(class1 ? class1 : "");
-    result.push(class2 ? class2 : "");
-    return result.join(" ");
-  };
-
-  const cellInnerClasses = (state: number): string => {
-    if (!boardSkinManager) {
-      return "";
-    }
-
-    const result: string[] = [];
-    const class1 = boardSkinManager.getCellBackgroundColor(state);
-    const class2 = boardSkinManager.getCellTextColor(state);
-    result.push(class1 ? class1 : "");
-    result.push(class2 ? class2 : "");
-    return result.join(" ");
   };
 
   const getRandomCell = (): IBoardCell => {
@@ -283,34 +216,6 @@ const RankMatchmaking: NextPage = () => {
           side2Avatar={side2Avatar}
         ></LoadingPopup>
       </div>
-
-      {AuthUser.id && (
-        <div className="flex w-full h-full flex-col items-center justify-center z-10 bg-pink-light-1 pt-12 lg:pl-36">
-          <div className="flex flex-row w-full h-full justify-center items-center mt-3">
-            <div className="flex flex-row flex-wrap justify-center items-center w-full">
-              {cells.map((cell, idx) => (
-                <div
-                  key={idx}
-                  className={`flex justify-center items-center w-[13vw] h-[13vw] m-2 xs:w-14 xs:h-14 sm:w-20 sm:h-20 drop-shadow-md ${cellOuterClasses(
-                    cell.state
-                  )}`}
-                >
-                  <input
-                    type="text"
-                    className={`flex w-full h-full items-center justify-center text-center text-3xl font-semibold uppercase rounded-none ${cellInnerClasses(
-                      cell.state
-                    )}`}
-                    value={cell.value}
-                    maxLength={1}
-                    readOnly
-                    onKeyDown={(e) => e.preventDefault()}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {AuthUser.id && (
         <div className="flex items-center justify-center w-full h-12 bg-white z-40 fixed bottom-0 right-0 left-0">
